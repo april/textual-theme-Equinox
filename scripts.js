@@ -13,7 +13,7 @@ var NickColorGenerator = (function () {
         selectNick.removeAttribute('colornumber');
         var nickcolor = this.generateColorFromHash(selectNick.getAttribute('nickname'));
 
-        if ((previousNick === selectNick.innerHTML) && (previousNickCount < 10)) {
+        if ((previousNick === selectNick.innerHTML) && (previousNickCount < 10) && (message.getAttribute('ltype') !== 'action')) {
           selectNick.style.visibility = "hidden";
           previousNickCount += 1;
         } else {
