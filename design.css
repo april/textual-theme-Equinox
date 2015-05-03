@@ -259,7 +259,7 @@ body div.line[ltype=privmsg][highlight=false] {
 }
 
 body div[ltype=privmsg] .senderContainer {
-	font-weight: 700;
+/*	font-weight: 700; */
 	min-height:23px;
 	width: 134px;
 	border-right: 1px solid rgb(64, 64, 64);
@@ -312,7 +312,7 @@ body div[ltype=action] .senderContainer {
 	bottom: 0;
 	left: 0;
 	width: 134px;
-	font-weight: 700;
+/*	font-weight: 700;*/
 	border-top: 1px solid transparent;
 	border-bottom: 1px solid transparent;
     background-color: #1d1d1d;
@@ -497,9 +497,11 @@ body[dir=rtl] div[ltype=quit] .message:before {
 
 /* Nickname Colors */
 
+/*
 body .inline_nickname {
 	font-weight: 700;
 }
+*/
 
 body .sender[mtype=myself] {
 	color: #9A60FF;
