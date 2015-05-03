@@ -3,8 +3,8 @@
 
 /* Defined in: "Textual.app -> Contents -> Resources -> JavaScript -> API -> core.js" */
 
-var mappedSelectedUsers = new Array();
-var previousNick = '', previousNickCount = 1;
+var mappedSelectedUsers = [];
+var previousNick = '', previousNickCount = 1, previousNickMessageId, previousNickDelete = false;
 
 var NickColorGenerator = (function () {
     function NickColorGenerator(message) {
@@ -13,14 +13,25 @@ var NickColorGenerator = (function () {
         selectNick.removeAttribute('colornumber');
         var nickcolor = this.generateColorFromHash(selectNick.getAttribute('nickname'));
 
+        // Delete the previous line's nick, if it was set to be deleted
+        if (previousNickDelete === true) {
+          document.getElementById(previousNickMessageId).getElementsByClassName('sender')[0].style.visibility = 'hidden';
+        }
+
+        // Track the nicks that submit messages, so that we can space out everything
         if ((previousNick === selectNick.innerHTML) && (previousNickCount < 10) && (message.getAttribute('ltype') !== 'action')) {
-          selectNick.style.visibility = "hidden";
+          previousNickDelete = true;
           previousNickCount += 1;
         } else {
-          selectNick.style.color = nickcolor;
           previousNick = selectNick.innerHTML;
           previousNickCount = 1;
+          previousNickDelete = false;
         }
+
+        // Track the previous message's id
+        previousNickMessageId = message.getAttribute('id');
+
+        selectNick.style.color = nickcolor;
 
         var inlineNicks = message.querySelectorAll('.inline_nickname');
         if (message.getAttribute('ltype') == 'action') {
