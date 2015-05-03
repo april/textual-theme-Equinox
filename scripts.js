@@ -4,7 +4,7 @@
 /* Defined in: "Textual.app -> Contents -> Resources -> JavaScript -> API -> core.js" */
 
 var mappedSelectedUsers = new Array();
-var previousNick = ''; previousNickCount = 1;
+var previousNick = '', previousNickCount = 1;
 
 var NickColorGenerator = (function () {
     function NickColorGenerator(message) {
