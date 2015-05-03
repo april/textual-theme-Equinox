@@ -112,6 +112,13 @@ Textual.viewBodyDidLoad = function() {
 
 Textual.newMessagePostedToView = function (line) {
     var message = document.getElementById('line-' + line);
+
+    // reset the message count and previous nick, when you rejoin a channel
+    if (message.getAttribute('ltype') === 'join') {
+      previousNick = '';
+      previousNickCount = 1;
+    }
+
 	if (message.getAttribute('ltype') === 'privmsg' || message.getAttribute('ltype') === 'action') {
         new NickColorGenerator(message);
     }

@@ -80,7 +80,7 @@ body[dir=ltr] .time {
 	float: right;
 	color: #999;
 	-webkit-user-select: none;
-	font-weight: bold;
+/*	font-weight: bold; */
 	margin-right: 10px;
 	line-height: 22px;
 	font-style: normal;
