@@ -507,6 +507,10 @@ body .sender[mtype=myself] {
 	color: #9A60FF;
 }
 
+body .sender {
+  margin-right: -.25em;
+}
+
 /* SELECTED USER MESSAGES */
 
 .senderContainer {
