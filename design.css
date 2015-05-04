@@ -514,7 +514,7 @@ body .sender {
 }
 
 body .f {  /* fade out */
-  -webkit-transition: color .85s;
+  -webkit-transition: color .75s;
 }
   
 
