@@ -224,10 +224,10 @@ body div.line[ltype=notice],
 body div.line[ltype=wallops] {
 	z-index: 191;
 	position: relative;
-	background-color: #2f3e53;
 	border-bottom: none;
 	border-top: none;
 	border-left: none;
+	background-color: #1d2734;
 }
 
 body div[ltype=ctcp] .senderContainer,
@@ -245,6 +245,7 @@ body div[ltype=notice] .senderContainer {
 	bottom: 0;
 	left: 0;
 	text-overflow: ellipsis;
+    background-color: #161616;
 }
 
 body div[ltype=notice] .message {

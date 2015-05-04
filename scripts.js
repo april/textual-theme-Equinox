@@ -125,7 +125,7 @@ Textual.newMessagePostedToView = function (line) {
     var message = document.getElementById('line-' + line);
 
     // reset the message count and previous nick, when you rejoin a channel
-    if (message.getAttribute('ltype') === 'join') {
+    if (message.getAttribute('ltype') !== 'privmsg') {
       previousNick = '';
       previousNickCount = 1;
     }
