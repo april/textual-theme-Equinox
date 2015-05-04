@@ -9,13 +9,16 @@ var previousNick = '', previousNickCount = 1, previousNickMessageId, previousNic
 var NickColorGenerator = (function () {
     function NickColorGenerator(message) {
         //Start alternative nick colouring procedure
+        var elem;
         var selectNick = message.querySelector(".sender");
         selectNick.removeAttribute('colornumber');
         var nickcolor = this.generateColorFromHash(selectNick.getAttribute('nickname'));
 
         // Delete the previous line's nick, if it was set to be deleted
         if (previousNickDelete === true) {
-          document.getElementById(previousNickMessageId).getElementsByClassName('sender')[0].style.visibility = 'hidden';
+          elem = document.getElementById(previousNickMessageId).getElementsByClassName('sender')[0];
+          elem.className += ' f';
+          elem.style.color = window.getComputedStyle(elem).backgroundColor;
         }
 
         // Track the nicks that submit messages, so that we can space out everything

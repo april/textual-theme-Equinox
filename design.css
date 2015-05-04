@@ -510,7 +510,13 @@ body .sender[mtype=myself] {
 
 body .sender {
   margin-right: -.25em;
+  
 }
+
+body .f {  /* fade out */
+  -webkit-transition: color 1s;
+}
+  
 
 /* SELECTED USER MESSAGES */
 
