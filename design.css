@@ -214,7 +214,8 @@ body[dir=ltr] div[ltype=action] .sender:before {
 }
 
 /* Historic / Log readback */
-.historic {
+#historic_messages,
+#body_home > .historic {
 	opacity: 0.6;
 }
 
