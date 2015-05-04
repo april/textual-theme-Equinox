@@ -3,7 +3,7 @@ textual-technical-theme
 
 An update to the nox theme for Textual 5:
 
-![Preview Image](http://i.imgur.com/ID2wbHa.png)
+![Preview Image](http://i.imgur.com/xgOvbEA.png)
 (with Monaco 11pt, the recommended font)
 
 textual includes the following changes:
