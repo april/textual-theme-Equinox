@@ -296,7 +296,7 @@ body div[ltype="privmsg"][encrypted="failed"] {
 }
 
 body div[ltype="privmsg"][highlight=true][encrypted="true"] {
-	background: repeating-linear-gradient(-45deg, #3b5847, #3b5847 20px, rgba(68, 89, 63, 0.3) 20px, rgba(68, 89, 63, 0.3) 40px) !important;
+	background: repeating-linear-gradient(-45deg, #30473a, #30473a 20px, rgba(68, 89, 63, 0.3) 20px, rgba(68, 89, 63, 0.3) 40px) !important;
 }
 
 body div[ltype=privmsg] p[ltype=myself] .message {
@@ -555,5 +555,5 @@ body div.line[ltype=action][highlight=true] {
   	z-index: 191;
   	position: relative;
 	font-weight: normal;
-	background-color: #3b5847;
+	background-color: #30473a;
 }
