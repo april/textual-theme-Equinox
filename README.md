@@ -1,18 +1,16 @@
-textual-technical-theme
+textual-theme-technical
 =======================
 
-An update to the nox theme for Textual 5:
+A massive overhaul of the nox theme for Textual 5:
 
 ![Preview Image](http://i.imgur.com/xgOvbEA.png)
 (with Monaco 11pt, the recommended font)
 
-textual includes the following changes:
-* Update the nick color generation to avoid garish/high-contrast colors (red on black), or low-contrast (dark blue on black)
-* Nick consolidation, where consecutive message from the same person only cause their nick to appear once. Similarly, it will squash repeated topics (which happens on frequent reconnects), and repeated modes. It should also hide self-join messages.
+**technical** includes the following changes:
+* Update the nick color generation to avoid garish/high-contrast colors (red on black), or low-contrast (dark blue on black).
+* Nick consolidation, where consecutive message from the same person only cause their nick to appear once. Similarly, it will squash repeated topics (which happens on frequent reconnects), and repeated modes. It should also hide self-join/part messages, and automatically clear away old disconnect messages once you reconnect to a channel.
 * Update the stylesheet to make the text mildly less contrasty (more black to background, more gray to text), and dozens of other style tweaks.
-* Disabling the default behavior of Textual to jump down to the bottom of a view (channel) when it becomes active
-
-Changes should only appear in design.css, scripts,js, LICENSE, and README.md, but this is a complete theme.
+* Disabling the default behavior of Textual to jump down to the bottom of a view (channel) when it becomes active.
 
 ## Install Instructions (Local):  
 1. Download the the theme by clicking the "Download Zip" button on the right-hand side.  
