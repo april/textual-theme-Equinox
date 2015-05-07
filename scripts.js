@@ -4,7 +4,13 @@
 /* Defined in: "Textual.app -> Contents -> Resources -> JavaScript -> API -> core.js" */
 
 var mappedSelectedUsers = [];
-var previousNick = '', previousNickCount = 1, previousNickMessageId, previousNickDelete = false;
+var rs = {}; // room state
+
+/* Set the default statuses for everything tracked in the roomState */
+rs.previousNickCount = 1;
+rs.previousNickDelete = false;
+
+// var previousNick = '', previousNickCount = 1, previousNickMessageId, previousNickDelete = false;
 
 var NickColorGenerator = (function () {
     function NickColorGenerator(message) {
@@ -13,26 +19,6 @@ var NickColorGenerator = (function () {
         var selectNick = message.querySelector(".sender");
         selectNick.removeAttribute('colornumber');
         var nickcolor = this.generateColorFromHash(selectNick.getAttribute('nickname'));
-
-        // Delete the previous line's nick, if it was set to be deleted
-        if (previousNickDelete === true) {
-          elem = document.getElementById(previousNickMessageId).getElementsByClassName('sender')[0];
-          elem.className += ' f';
-          elem.style.color = window.getComputedStyle(elem).backgroundColor;
-        }
-
-        // Track the nicks that submit messages, so that we can space out everything
-        if ((previousNick === selectNick.innerHTML) && (previousNickCount < 10) && (message.getAttribute('ltype') !== 'action')) {
-          previousNickDelete = true;
-          previousNickCount += 1;
-        } else {
-          previousNick = selectNick.innerHTML;
-          previousNickCount = 1;
-          previousNickDelete = false;
-        }
-
-        // Track the previous message's id
-        previousNickMessageId = message.getAttribute('id');
 
         selectNick.style.color = nickcolor;
 
@@ -125,17 +111,88 @@ Textual.viewBodyDidLoad = function() {
 };
 
 Textual.newMessagePostedToView = function (line) {
+    'use strict';
     var message = document.getElementById('line-' + line);
+    var elem, mode, sender, topic;
 
     // reset the message count and previous nick, when you rejoin a channel
     if (message.getAttribute('ltype') !== 'privmsg') {
-      previousNick = '';
-      previousNickCount = 1;
+      rs.previousNick = '';
+      rs.previousNickCount = 1;
     }
 
+    // if it's a private message, colorize the nick and then track the state and fade away the nicks if needed
 	if (message.getAttribute('ltype') === 'privmsg' || message.getAttribute('ltype') === 'action') {
-        new NickColorGenerator(message);
+      sender = message.getElementsByClassName('sender')[0];
+      new NickColorGenerator(message); // colorized the nick
+
+      // Delete (ie, make foreground and background color identical) the previous line's nick, if it was set to be deleted
+      if (rs.previousNickDelete === true) {
+        elem = document.getElementById(rs.previousNickMessageId).getElementsByClassName('sender')[0];
+        elem.className += ' f';
+        elem.style.color = window.getComputedStyle(elem).backgroundColor;
+      }
+
+      // Track the nicks that submit messages, so that we can space out everything
+      if ((rs.previousNick === sender.innerHTML) && (rs.previousNickCount < 10) && (message.getAttribute('ltype') !== 'action')) {
+        rs.previousNickDelete = true;
+        rs.previousNickCount += 1;
+      } else {
+        rs.previousNick = sender.innerHTML;
+        rs.previousNickCount = 1;
+        rs.previousNickDelete = false;
+      }
+
+      // Track the previous message's id
+      rs.previousNickMessageId = message.getAttribute('id');
     }
+
+    /* Let's kill topics that appear where they had already been set before
+       This happens when you join a room (like a reconnect) that you had been in and seen the topic before */
+    if (message.getAttribute('ltype') === 'topic') {
+      topic = message.getElementsByClassName('message')[0].textContent.replace('Topic is ', '').replace(/\s+/, '');
+
+      if (message.getAttribute('command') === '332') { // an actual topic change
+        // hide the topic if it's the same topic again
+        if (topic === rs.previousTopic) {
+          message.parentNode.removeChild(message);
+          rs.previousTopicDeleteSetBy = true;
+        }
+
+        rs.previousTopic = topic;
+      }
+
+      if ((message.getAttribute('command') === '333') && (rs.previousTopicDeleteSetBy === true)) {
+        message.parentNode.removeChild(message);
+        rs.previousTopicDeleteSetBy = false;
+      }
+    }
+
+    // much like we suppress duplicate topics, we want to suppress duplicate modes
+    if (message.getAttribute('ltype') === 'mode') {
+      mode = message.getElementsByClassName('message')[0].getElementsByTagName('b')[0].textContent;
+
+      if (mode === rs.previousMode) {
+        message.parentNode.removeChild(message);
+      } else {
+        rs.previousMode = mode;
+      }
+    }
+
+    // hide messages about yourself joining
+    if (message.getAttribute('ltype') === 'join') {
+      if (message.getElementsByClassName('message')[0].getElementsByTagName('b')[0].textContent === app.localUserNickname()) {
+        message.parentNode.removeChild(message);
+      }
+    }
+
+    // clear out all the old disconnect messages, if you're currently connected to the channel
+    if ((message.getAttribute('ltype') === 'debug') && (message.getAttribute('command') === '-100')) {
+      if (app.channelIsJoined() && (message.getElementsByClassName('message')[0].textContent.search('Disconnect') !== -1)) {
+        message.parentNode.removeChild(message);
+      }
+    }
+
     if (message.getAttribute("encrypted") === "true") {
         var messageText = message.querySelector(".innerMessage");
         if (messageText.innerText.indexOf("+OK") !== -1) {
