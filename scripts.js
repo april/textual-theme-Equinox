@@ -10,8 +10,6 @@ var rs = {}; // room state
 rs.previousNickCount = 1;
 rs.previousNickDelete = false;
 
-// var previousNick = '', previousNickCount = 1, previousNickMessageId, previousNickDelete = false;
-
 var NickColorGenerator = (function () {
     function NickColorGenerator(message) {
         //Start alternative nick colouring procedure
@@ -110,6 +108,19 @@ Textual.viewBodyDidLoad = function() {
     }, 500);
 };
 
+/* When you join a channel, delete all the old disconnected messages */
+Textual.handleEvent = function (event) {
+  var i, messages;
+  if (event === 'channelJoined') {
+    messages = document.querySelectorAll('div[command="-100"]');
+    for (i = 0; i < messages.length; i++) {
+      if (app.channelIsJoined() && (messages[i].getElementsByClassName('message')[0].textContent.search('Disconnect') !== -1)) {
+        messages[i].parentNode.removeChild(messages[i]);
+      }
+    }
+  }
+}
+
 Textual.newMessagePostedToView = function (line) {
     'use strict';
     var message = document.getElementById('line-' + line);
@@ -180,13 +191,14 @@ Textual.newMessagePostedToView = function (line) {
     }
 
     // hide messages about yourself joining
-    if (message.getAttribute('ltype') === 'join') {
+    if ((message.getAttribute('ltype') === 'join') || (message.getAttribute('ltype') === 'part')) {
       if (message.getElementsByClassName('message')[0].getElementsByTagName('b')[0].textContent === app.localUserNickname()) {
         message.parentNode.removeChild(message);
       }
     }
 
-    // clear out all the old disconnect messages, if you're currently connected to the channel
+    /* clear out all the old disconnect messages, if you're currently connected to the channel
+       note that normally Textual.handleEvent will catch this, but if you reload a theme, they will reappear */
     if ((message.getAttribute('ltype') === 'debug') && (message.getAttribute('command') === '-100')) {
       if (app.channelIsJoined() && (message.getElementsByClassName('message')[0].textContent.search('Disconnect') !== -1)) {
         message.parentNode.removeChild(message);
