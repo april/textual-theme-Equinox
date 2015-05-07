@@ -8,9 +8,9 @@ An update to the nox theme for Textual 5:
 
 textual includes the following changes:
 * Update the nick color generation to avoid garish/high-contrast colors (red on black), or low-contrast (dark blue on black)
-* Nick consolidation, where consecutive message from the same person only cause their nick to appear once
+* Nick consolidation, where consecutive message from the same person only cause their nick to appear once. Similarly, it will squash repeated topics (which happens on frequent reconnects), and repeated modes. It should also hide self-join messages.
+* Update the stylesheet to make the text mildly less contrasty (more black to background, more gray to text), and dozens of other style tweaks.
 * Disabling the default behavior of Textual to jump down to the bottom of a view (channel) when it becomes active
-* Update the stylesheet to make the text mildly less contrasty (more black to background, more gray to text), other tweaks
 
 Changes should only appear in design.css, scripts,js, LICENSE, and README.md, but this is a complete theme.
 
