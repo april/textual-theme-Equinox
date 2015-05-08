@@ -144,6 +144,27 @@ a:hover {
 	text-shadow: 1px 1px rgba(10, 10, 10, 0.7);
 }
 
+/* Hidden scrollback history bar */
+#scrolling_history {
+  	z-index: 400;
+	position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: auto;
+	box-shadow: 0 1px 5px #777;
+	border-top: 1px solid #404040;
+	text-shadow: 1px 1px rgba(10, 10, 10, 0.7);
+    background: rgba(35, 57, 89, .95);
+    display: none;
+    overflow: hidden;
+}
+
+#scrolling_history .senderContainer {
+    background: rgba(35, 57, 89, .95);
+}
+  
+
 /* Images */
 
 body a img {

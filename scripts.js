@@ -108,6 +108,33 @@ var NickColorGenerator = (function () {
   return NickColorGenerator;
 })();
 
+
+
+function isMessageInViewport(elem) {
+  'use strict';
+
+  return (elem.getBoundingClientRect().bottom <= document.documentElement.clientHeight);
+}
+
+Textual.viewInitiated = function () {
+  'use strict';
+
+  /* When the view is loaded, create a hidden history div which we display if there is scrollback */
+  var body = document.getElementById('body_home'), div = document.createElement('div');
+  div.id = 'scrolling_history';
+  document.getElementsByTagName('body')[0].appendChild(div);
+  rs.history = div;
+
+  /* setup the scrolling event to display the hidden history if the bottom element isn't in the viewport */
+  window.onscroll = function () {
+    if (isMessageInViewport(body.childNodes[body.childElementCount - 1]) === false) {
+      rs.history.style.display = 'inline';
+    } else {
+      rs.history.style.display = 'none';
+    }
+  };
+};
+
 Textual.viewBodyDidLoad = function () {
   'use strict';
   Textual.fadeOutLoadingScreen(1.00, 0.95);
@@ -154,7 +181,7 @@ function updateNicknameAssociatedWithNewMessage(e) {
 Textual.newMessagePostedToView = function (line) {
   'use strict';
   var message = document.getElementById('line-' + line);
-  var elem, getEmbeddedImages, i, mode, messageText, sender, topic;
+  var clone, elem, getEmbeddedImages, i, mode, messageText, sender, topic;
 
   // reset the message count and previous nick, when you rejoin a channel
   if (message.getAttribute('ltype') !== 'privmsg') {
@@ -186,6 +213,21 @@ Textual.newMessagePostedToView = function (line) {
 
     // Track the previous message's id
     rs.previousNickMessageId = message.getAttribute('id');
+
+    // Copy the message into the hidden history
+    clone = message.cloneNode(true);
+    clone.removeAttribute('id');
+    rs.history.appendChild(clone);
+
+    // Remove old messages, if the history is longer than three messages
+    if (rs.history.childElementCount > 2) {
+      rs.history.removeChild(rs.history.childNodes[0]);
+
+      // Hide the first nick in the hidden history, if it's the same as the second
+      if ((rs.previousNickCount > 1) && (message.getAttribute('ltype') !== 'action')) {
+        rs.history.getElementsByClassName('sender')[0].style.visibility = 'hidden';
+      }
+    }
   }
 
   /* Let's kill topics that appear where they had already been set before
@@ -255,6 +297,7 @@ Textual.newMessagePostedToView = function (line) {
       };
     }
   }
+
   updateNicknameAssociatedWithNewMessage(message);
 };
 
