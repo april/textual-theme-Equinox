@@ -4,11 +4,12 @@
 /* Defined in: "Textual.app -> Contents -> Resources -> JavaScript -> API -> core.js" */
 
 var mappedSelectedUsers = [];
-var rs = {}; // room state
+var rs                  = {}; // room state
 
 /* Set the default statuses for everything tracked in the roomState */
-rs.previousNickCount = 1;
-rs.previousNickDelete = false;
+rs.previousNickCount       = 1;
+rs.previousNickDelete      = false;
+rs.previousNickRepeatCount = 10; // How frequently to repeat a nick if they have many lines in a row
 
 var NickColorGenerator = (function () {
   'use strict';
@@ -37,15 +38,12 @@ var NickColorGenerator = (function () {
     }
   }
 
+/*   Attempts to clean up a nickname by removing alternate characters from the end;
+     nc_ becomes nc, avidal` becomes avidal */
   NickColorGenerator.prototype.sanitiseNickname = function (nick) {
-    // attempts to clean up a nickname
-    // by removing alternate characters from the end
-    // nc_ becomes nc, avidal` becomes avidal
     nick = nick.toLowerCase();
-    // typically ` and _ are used on the end alone
-    nick = nick.replace(/[`_]+$/, '');
-    // remove |<anything> from the end
-    nick = nick.replace(/|.*$/, '');
+    nick = nick.replace(/[`_]+$/, ''); // typically ` and _ are used on the end alone
+    nick = nick.replace(/|.*$/, ''); // remove |<anything> from the end
     return nick;
   };
 
@@ -60,9 +58,9 @@ var NickColorGenerator = (function () {
 
   NickColorGenerator.prototype.generateColorFromHash = function (nick) {
     var nickhash = this.generateHashFromNickname(nick);
-    var deg = nickhash % 360;
-    var h = deg < 0 ? 360 + deg : deg;
-    var l = Math.abs(nickhash) % 110;
+    var deg      = nickhash % 360;
+    var h        = deg < 0 ? 360 + deg : deg;
+    var l        = Math.abs(nickhash) % 110;
     var s;
 
     // don't use the blue hues
@@ -108,55 +106,20 @@ var NickColorGenerator = (function () {
   return NickColorGenerator;
 })();
 
-
-
 function isMessageInViewport(elem) {
   'use strict';
 
   return (elem.getBoundingClientRect().bottom <= document.documentElement.clientHeight);
 }
 
-Textual.viewInitiated = function () {
+function toggleSelectionStatusForNicknameInsideElement(e) {
   'use strict';
+  /* e is nested as the .sender so we have to go three parents
+   up in order to reach the parent div that owns it. */
+  var parentSelector = e.parentNode.parentNode.parentNode.parentNode;
 
-  /* When the view is loaded, create a hidden history div which we display if there is scrollback */
-  var body = document.getElementById('body_home'), div = document.createElement('div');
-  div.id = 'scrolling_history';
-  document.getElementsByTagName('body')[0].appendChild(div);
-  rs.history = div;
-
-  /* setup the scrolling event to display the hidden history if the bottom element isn't in the viewport */
-  window.onscroll = function () {
-    if (isMessageInViewport(body.childNodes[body.childElementCount - 1]) === false) {
-      rs.history.style.display = 'inline';
-    } else {
-      rs.history.style.display = 'none';
-    }
-  };
-};
-
-Textual.viewBodyDidLoad = function () {
-  'use strict';
-  Textual.fadeOutLoadingScreen(1.00, 0.95);
-
-  setTimeout(function () {
-    Textual.scrollToBottomOfView();
-  }, 500);
-};
-
-/* When you join a channel, delete all the old disconnected messages */
-Textual.handleEvent = function (event) {
-  'use strict';
-  var i, messages;
-  if (event === 'channelJoined') {
-    messages = document.querySelectorAll('div[command="-100"]');
-    for (i = 0; i < messages.length; i++) {
-      if (app.channelIsJoined() && (messages[i].getElementsByClassName('message')[0].textContent.search('Disconnect') !== -1)) {
-        messages[i].parentNode.removeChild(messages[i]);
-      }
-    }
-  }
-};
+  parentSelector.classList.toggle('selectedUser');
+}
 
 function updateNicknameAssociatedWithNewMessage(e) {
   'use strict';
@@ -177,6 +140,52 @@ function updateNicknameAssociatedWithNewMessage(e) {
     }
   }
 }
+
+/* This is called when the .sender is clicked. */
+function userNicknameSingleClickEvent(e) {
+  'use strict';
+
+  var allLines, documentBody, i, sender;
+  var nickname = e.getAttribute('nickname');
+  var mappedIndex = mappedSelectedUsers.indexOf(nickname);
+
+  if (mappedIndex === -1) {
+    mappedSelectedUsers.push(nickname);
+  } else {
+    mappedSelectedUsers.splice(mappedIndex, 1);
+  }
+
+  /* Gather basic information. */
+  documentBody = document.getElementById('body_home');
+
+  allLines = documentBody.querySelectorAll('div[ltype="privmsg"], div[ltype="action"]');
+
+  /* Update all elements of the DOM matching conditions. */
+  for (i = 0; i < allLines.length; i++) {
+    sender = allLines[i].querySelectorAll('.sender');
+
+    if (sender.length > 0) {
+      if (sender[0].getAttribute('nickname') === nickname) {
+        toggleSelectionStatusForNicknameInsideElement(sender[0]);
+      }
+    }
+  }
+}
+
+/* When you join a channel, delete all the old disconnected messages */
+Textual.handleEvent = function (event) {
+  'use strict';
+  var i, messages;
+
+  if (event === 'channelJoined') {
+    messages = document.querySelectorAll('div[command="-100"]');
+    for (i = 0; i < messages.length; i++) {
+      if (app.channelIsJoined() && (messages[i].getElementsByClassName('message')[0].textContent.search('Disconnect') !== -1)) {
+        messages[i].parentNode.removeChild(messages[i]);
+      }
+    }
+  }
+};
 
 Textual.newMessagePostedToView = function (line) {
   'use strict';
@@ -202,12 +211,12 @@ Textual.newMessagePostedToView = function (line) {
     }
 
     // Track the nicks that submit messages, so that we can space out everything
-    if ((rs.previousNick === sender.innerHTML) && (rs.previousNickCount < 10) && (message.getAttribute('ltype') !== 'action')) {
+    if ((rs.previousNick === sender.innerHTML) && (rs.previousNickCount < rs.previousNickRepeatCount) && (message.getAttribute('ltype') !== 'action')) {
       rs.previousNickDelete = true;
       rs.previousNickCount += 1;
     } else {
       rs.previousNick = sender.innerHTML;
-      rs.previousNickCount = 1;
+      rs.previousNickCount  = 1;
       rs.previousNickDelete = false;
     }
 
@@ -301,53 +310,44 @@ Textual.newMessagePostedToView = function (line) {
   updateNicknameAssociatedWithNewMessage(message);
 };
 
+Textual.nicknameSingleClicked = function (e) {
+  'use strict';
+  userNicknameSingleClickEvent(e);
+};
+
 /* Don't jump back to the bottom of the window when the view becomes visible */
 Textual.notifyDidBecomeVisible = function () {
   'use strict';
   window.getSelection().empty();
 };
 
-function toggleSelectionStatusForNicknameInsideElement(e) {
+Textual.viewBodyDidLoad = function () {
   'use strict';
-  /* e is nested as the .sender so we have to go three parents
-   up in order to reach the parent div that owns it. */
-  var parentSelector = e.parentNode.parentNode.parentNode.parentNode;
+  Textual.fadeOutLoadingScreen(1.00, 0.95);
 
-  parentSelector.classList.toggle('selectedUser');
-}
+  setTimeout(function () {
+    Textual.scrollToBottomOfView();
+  }, 500);
+};
 
-/* This is called when the .sender is clicked. */
-function userNicknameSingleClickEvent(e) {
+Textual.viewInitiated = function () {
   'use strict';
 
-  var allLines, documentBody, i, sender;
-  var nickname = e.getAttribute('nickname');
-  var mappedIndex = mappedSelectedUsers.indexOf(nickname);
+  /* When the view is loaded, create a hidden history div which we display if there is scrollback */
+  var body = document.getElementById('body_home'), div = document.createElement('div');
+  div.id = 'scrolling_history';
+  document.getElementsByTagName('body')[0].appendChild(div);
+  rs.history = div;
 
-  if (mappedIndex === -1) {
-    mappedSelectedUsers.push(nickname);
-  } else {
-    mappedSelectedUsers.splice(mappedIndex, 1);
-  }
-
-  /* Gather basic information. */
-  documentBody = document.getElementById('body_home');
-
-  allLines = documentBody.querySelectorAll('div[ltype="privmsg"], div[ltype="action"]');
-
-  /* Update all elements of the DOM matching conditions. */
-  for (i = 0; i < allLines.length; i++) {
-    sender = allLines[i].querySelectorAll('.sender');
-
-    if (sender.length > 0) {
-      if (sender[0].getAttribute('nickname') === nickname) {
-        toggleSelectionStatusForNicknameInsideElement(sender[0]);
-      }
+  /* setup the scrolling event to display the hidden history if the bottom element isn't in the viewport
+     also hide the topic bar when scrolling */
+  window.onscroll = function () {
+    if (isMessageInViewport(body.childNodes[body.childElementCount - 1]) === false) { // scrollback
+      rs.history.style.display = 'inline';
+      document.getElementById('topic_bar').style.visibility = 'hidden';
+    } else {
+      rs.history.style.display = 'none'; // at the bottom
+      document.getElementById('topic_bar').style.visibility = 'visible';
     }
-  }
-}
-
-Textual.nicknameSingleClicked = function (e) {
-  'use strict';
-  userNicknameSingleClickEvent(e);
+  };
 };
