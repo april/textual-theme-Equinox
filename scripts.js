@@ -42,7 +42,7 @@ var NickColorGenerator = (function () {
      nc_ becomes nc, avidal` becomes avidal */
   NickColorGenerator.prototype.sanitiseNickname = function (nick) {
     nick = nick.toLowerCase();
-    nick = nick.replace(/[`_]+$/, ''); // typically ` and _ are used on the end alone
+    nick = nick.replace(/[`_-]+$/, ''); // typically `, _, and - are used on the end of a nick
     nick = nick.replace(/|.*$/, ''); // remove |<anything> from the end
     return nick;
   };

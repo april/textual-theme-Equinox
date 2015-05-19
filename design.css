@@ -154,7 +154,6 @@ a:hover {
   box-shadow: 0 1px 5px #777;
   border-top: 1px solid #404040;
   text-shadow: 1px 1px rgba(10, 10, 10, 0.7);
-  /*background: rgba(35, 57, 89, .95);*/
   background: rgba(31, 51, 81, 0.95);
   display: none;
   overflow: hidden;
