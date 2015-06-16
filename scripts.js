@@ -63,12 +63,12 @@ var NickColorGenerator = (function () {
     var l        = Math.abs(nickhash) % 110;
     var s;
 
-    // don't use the blue hues
-    if (h >= 240 && h <= 270) {
-      h += 30;
+    // don't use the blue and purple hues
+    if (h >= 255 && h <= 290) {
+      h += 45;
     }
-    if (h < 240 && h >= 210) {
-      h -= 30;
+    if (h < 255 && h >= 210) {
+      h -= 45;
     }
 
     // shift the reds into pinks and oranges
