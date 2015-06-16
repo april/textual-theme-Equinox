@@ -236,7 +236,7 @@ body[dir=ltr] div[ltype=action] .sender:before {
 /* Historic / Log readback */
 #historic_messages,
 #body_home > .historic {
-  opacity: 0.8;
+  opacity: 0.83;
 }
 
 /* NOTICE/CTCP/WALLOPS */
