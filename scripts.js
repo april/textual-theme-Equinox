@@ -3,13 +3,18 @@
 
 /* Defined in: "Textual.app -> Contents -> Resources -> JavaScript -> API -> core.js" */
 
-var mappedSelectedUsers = [];
-var rs                  = {}; // room state
+/* Theme-wide preferences, as per milky's request */
+var Equinox = {
+  fadeNicks: true,            // fade out nicknames when they appear multiple times in a row
+  fadeNicksFreq: 10           // how frequently to display a nick if they have fadeNickCounts lines in a row
+};
 
 /* Set the default statuses for everything tracked in the roomState */
-rs.previousNickCount       = 1;
-rs.previousNickDelete      = false;
-rs.previousNickRepeatCount = 10; // How frequently to repeat a nick if they have many lines in a row
+var mappedSelectedUsers = [];
+var rs                  = { // room state
+  previousNickCount: 1,
+  previousNickDelete: false
+};
 
 var NickColorGenerator = (function () {
   'use strict';
@@ -211,7 +216,8 @@ Textual.newMessagePostedToView = function (line) {
     }
 
     // Track the nicks that submit messages, so that we can space out everything
-    if ((rs.previousNick === sender.innerHTML) && (rs.previousNickCount < rs.previousNickRepeatCount) && (message.getAttribute('ltype') !== 'action')) {
+    if ((rs.previousNick === sender.innerHTML) && (rs.previousNickCount < Equinox.fadeNicksFreq)
+      && (message.getAttribute('ltype') !== 'action') && (Equinox.fadeNicks === true)) {
       rs.previousNickDelete = true;
       rs.previousNickCount += 1;
     } else {
