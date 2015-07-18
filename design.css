@@ -82,7 +82,7 @@ body[dir=ltr] .time {
   -webkit-user-select: none;
   /*  font-weight: bold; */
   margin-right: 10px;
-  /* padding-left: 25px;*/
+  padding-left: 25px;
   line-height: 22px;
   font-style: normal;
   text-align: right;
@@ -421,7 +421,7 @@ body div.line[command="722"] .message {
 body span.message {
   position: relative;
   padding-left: 150px;
-  padding-right: 25px;
+  /* padding-right: 25px; */
   display: table-cell;
   min-height: 22px;
   line-height: 22px;
