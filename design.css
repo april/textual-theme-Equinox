@@ -75,7 +75,7 @@ body[dir=rtl] .senderContainer {
 
 /* Time */
 body[dir=ltr] .time {
-  font-size: 10px !important;
+  font-size: .91em !important;
   white-space: nowrap;
   float: right;
   color: #999;
