@@ -6,7 +6,9 @@
 /* Theme-wide preferences, as per milky's request */
 var Equinox = {
   fadeNicks: true,            // fade out nicknames when they appear multiple times in a row
-  fadeNicksFreq: 10           // how frequently to display a nick if they have fadeNickCounts lines in a row
+  fadeNicksFreq: 10,          // how frequently to display a nick if they have fadeNickCounts lines in a row
+  squashModes: true,          // if a duplicate mode gets posted to the channel, squash it
+  squashTopics: true          // if a duplicate topic gets posted to the channel, squash it
 };
 
 /* Set the default statuses for everything tracked in the roomState */
@@ -177,6 +179,12 @@ function userNicknameSingleClickEvent(e) {
   }
 }
 
+/* When the date changes; either a new day, or the system clock changes */
+Textual.dateChanged = function (year, month, day) {
+  'use strict';
+  // TODO
+};
+
 /* When you join a channel, delete all the old disconnected messages */
 Textual.handleEvent = function (event) {
   'use strict';
@@ -247,7 +255,7 @@ Textual.newMessagePostedToView = function (line) {
 
   /* Let's kill topics that appear where they had already been set before
      This happens when you join a room (like a reconnect) that you had been in and seen the topic before */
-  if (message.getAttribute('ltype') === 'topic') {
+  if (Equinox.squashTopics === true && message.getAttribute('ltype') === 'topic') {
     topic = message.getElementsByClassName('message')[0].textContent.replace('Topic is ', '').replace(/\s+/, '');
 
     if (message.getAttribute('command') === '332') { // an actual topic change
@@ -267,7 +275,7 @@ Textual.newMessagePostedToView = function (line) {
   }
 
   // much like we suppress duplicate topics, we want to suppress duplicate modes
-  if (message.getAttribute('ltype') === 'mode') {
+  if (Equinox.squashModes === true && message.getAttribute('ltype') === 'mode') {
     mode = message.getElementsByClassName('message')[0].getElementsByTagName('b')[0].textContent;
 
     if (mode === rs.previousMode) {
