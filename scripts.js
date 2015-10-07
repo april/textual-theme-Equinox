@@ -7,13 +7,19 @@
 var Equinox = {
   fadeNicks: true,            // fade out nicknames when they appear multiple times in a row
   fadeNicksFreq: 10,          // how frequently to display a nick if they have fadeNickCounts lines in a row
-  squashModes: true,          // if a duplicate mode gets posted to the channel, squash it
+  showDateChanges: true,      // show date changes
+  squashModes: false,         // if a duplicate mode gets posted to the channel, squash it
   squashTopics: true          // if a duplicate topic gets posted to the channel, squash it
 };
 
 /* Set the default statuses for everything tracked in the roomState */
 var mappedSelectedUsers = [];
 var rs                  = { // room state
+  previousDate: {
+    year: 0,
+    month: 0,
+    day: 0
+  },
   previousNickCount: 1,
   previousNickDelete: false
 };
@@ -24,7 +30,7 @@ var NickColorGenerator = (function () {
   function NickColorGenerator(message) {
     var i, inlineNicks, nick;
 
-    //Start alternative nick colouring procedure
+    // Start alternative nick colouring procedure
     var selectNick = message.querySelector('.sender');
     selectNick.removeAttribute('colornumber');
     var nickcolor = this.generateColorFromHash(selectNick.getAttribute('nickname'));
@@ -32,12 +38,14 @@ var NickColorGenerator = (function () {
     selectNick.style.color = nickcolor;
 
     inlineNicks = message.querySelectorAll('.inline_nickname');
+
     if (message.getAttribute('ltype') === 'action') {
       message.querySelector('.message').style.color = nickcolor;
     }
+
     for (i = 0; i < inlineNicks.length; i++) {
       inlineNicks[i].removeAttribute('colornumber');
-      nick = inlineNicks[i].innerHTML;
+      nick = inlineNicks[i].textContent;
       if (inlineNicks[i].getAttribute('mode').length > 0) {
         nick = nick.replace(inlineNicks[i].getAttribute('mode'), '');
       }
@@ -116,6 +124,10 @@ var NickColorGenerator = (function () {
 function isMessageInViewport(elem) {
   'use strict';
 
+  if (!elem.getBoundingClientRect) {
+    return true;
+  }
+
   return (elem.getBoundingClientRect().bottom <= document.documentElement.clientHeight);
 }
 
@@ -148,41 +160,67 @@ function updateNicknameAssociatedWithNewMessage(e) {
   }
 }
 
-/* This is called when the .sender is clicked. */
-function userNicknameSingleClickEvent(e) {
-  'use strict';
-
-  var allLines, documentBody, i, sender;
-  var nickname = e.getAttribute('nickname');
-  var mappedIndex = mappedSelectedUsers.indexOf(nickname);
-
-  if (mappedIndex === -1) {
-    mappedSelectedUsers.push(nickname);
-  } else {
-    mappedSelectedUsers.splice(mappedIndex, 1);
-  }
-
-  /* Gather basic information. */
-  documentBody = document.getElementById('body_home');
-
-  allLines = documentBody.querySelectorAll('div[ltype="privmsg"], div[ltype="action"]');
-
-  /* Update all elements of the DOM matching conditions. */
-  for (i = 0; i < allLines.length; i++) {
-    sender = allLines[i].querySelectorAll('.sender');
-
-    if (sender.length > 0) {
-      if (sender[0].getAttribute('nickname') === nickname) {
-        toggleSelectionStatusForNicknameInsideElement(sender[0]);
-      }
-    }
-  }
-}
-
 /* When the date changes; either a new day, or the system clock changes */
-Textual.dateChanged = function (year, month, day) {
+Textual.dateChanged = function () {
   'use strict';
-  // TODO
+  var year, month, day, now, e;
+
+  // Only show date changes if the option is enabled
+  if (!Equinox.showDateChanges) {
+    return;
+  }
+
+  // Detect if dateChanged is called via newMessagePostedToView; if > 3000, obviously arguments[0] is a UNIX timestamp
+  if (arguments[0] < 3000) {  // break Equinox with Y3K
+    now = new Date(arguments[0], arguments[1] - 1, arguments[2]);
+  } else {
+    now = new Date(arguments[0]);
+    e = arguments[1];
+  }
+
+  year = now.getFullYear();
+  month = now.getMonth();
+  day = now.getDate();
+
+  // First, we make sure that the year, month, day are new; store them in roomstate if so
+  if (year === rs.previousDate.year &&
+      month === rs.previousDate.month &&
+      day === rs.previousDate.day) {
+    return;
+  }
+  else {
+    rs.previousDate = {
+      year: year,
+      month: month,
+      day: day
+    };
+  }
+
+  // First, let's get the last line posted to body_home
+  var lastline = document.getElementById('body_home').lastChild;
+
+  // And if it's a mark or a previous date entry, let's remove it, we can use css + selectors for marks that follow
+  if (lastline.id === 'mark' || lastline.className === 'date') {
+    document.getElementById('body_home').removeChild(lastline);
+  }
+
+  // Create the date element: <div class="date"><hr /><span>...</span><hr /></div>
+  var div = document.createElement('div');
+  var span = document.createElement('span');
+  div.className = 'date';
+  div.appendChild(document.createElement('hr'));
+  div.appendChild(span);
+  div.appendChild(document.createElement('hr'));
+
+  // Set the span's content to the current date (Friday, October 14th)
+  span.textContent = now.toLocaleDateString();
+
+  // We insert it before, if it was sent via newMessagePostedToView, insert after if called by Textual
+  if (e) {
+    e.parentElement.insertBefore(div, e);
+  } else {
+    document.getElementById('body_home').appendChild(div);
+  }
 };
 
 /* When you join a channel, delete all the old disconnected messages */
@@ -209,6 +247,11 @@ Textual.newMessagePostedToView = function (line) {
   if (message.getAttribute('ltype') !== 'privmsg') {
     rs.previousNick = '';
     rs.previousNickCount = 1;
+  }
+
+  // call the dateChanged() function, for any message with a timestamp
+  if (message.getAttribute('timestamp')) {
+    Textual.dateChanged(parseFloat(message.getAttribute('timestamp')) * 1000, message);
   }
 
   // if it's a private message, colorize the nick and then track the state and fade away the nicks if needed
@@ -324,9 +367,37 @@ Textual.newMessagePostedToView = function (line) {
   updateNicknameAssociatedWithNewMessage(message);
 };
 
+/* This is called when a .sender is clicked */
 Textual.nicknameSingleClicked = function (e) {
   'use strict';
-  userNicknameSingleClickEvent(e);
+  var allLines, documentBody, i, sender;
+  var nickname = e.getAttribute('nickname');
+  var mappedIndex = mappedSelectedUsers.indexOf(nickname);
+
+  if (mappedIndex === -1) {
+    mappedSelectedUsers.push(nickname);
+  } else {
+    mappedSelectedUsers.splice(mappedIndex, 1);
+  }
+
+  /* Gather basic information. */
+  documentBody = document.getElementById('body_home');
+
+  allLines = documentBody.querySelectorAll('div[ltype="privmsg"], div[ltype="action"]');
+
+  /* Update all elements of the DOM matching conditions. */
+  for (i = 0; i < allLines.length; i++) {
+    sender = allLines[i].querySelectorAll('.sender');
+
+    if (sender.length > 0) {
+      if (sender[0].getAttribute('nickname') === nickname) {
+
+        /* e is nested as the .sender so we have to go three parents
+         up in order to reach the parent div that owns it. */
+        toggleSelectionStatusForNicknameInsideElement(sender[0]);
+      }
+    }
+  }
 };
 
 /* Don't jump back to the bottom of the window when the view becomes visible */
@@ -356,7 +427,14 @@ Textual.viewInitiated = function () {
   /* setup the scrolling event to display the hidden history if the bottom element isn't in the viewport
      also hide the topic bar when scrolling */
   window.onscroll = function () {
-    if (isMessageInViewport(body.childNodes[body.childElementCount - 1]) === false) { // scrollback
+    var line, lines;
+    lines = body.getElementsByClassName('line');
+    if (lines.length < 2) {
+      return;
+    }
+    line = lines[lines.length - 1];
+
+    if (isMessageInViewport(line) === false) { // scrollback
       rs.history.style.display = 'inline';
       document.getElementById('topic_bar').style.visibility = 'hidden';
     } else {
