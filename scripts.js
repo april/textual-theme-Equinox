@@ -160,23 +160,17 @@ function updateNicknameAssociatedWithNewMessage(e) {
   }
 }
 
-/* When the date changes; either a new day, or the system clock changes */
-Textual.dateChanged = function () {
+/* Insert a date, if the date has changed from the previous message */
+function dateChange(timestamp, e) {
   'use strict';
-  var year, month, day, now, e;
+  var year, month, day, now;
 
   // Only show date changes if the option is enabled
   if (!Equinox.showDateChanges) {
     return;
   }
 
-  // Detect if dateChanged is called via newMessagePostedToView; if > 3000, obviously arguments[0] is a UNIX timestamp
-  if (arguments[0] < 3000) {  // break Equinox with Y3K
-    now = new Date(arguments[0], arguments[1] - 1, arguments[2]);
-  } else {
-    now = new Date(arguments[0]);
-    e = arguments[1];
-  }
+  now = new Date(parseFloat(timestamp) * 1000);
 
   year = now.getFullYear();
   month = now.getMonth();
@@ -196,12 +190,12 @@ Textual.dateChanged = function () {
     };
   }
 
-  // First, let's get the last line posted to body_home
-  var lastline = document.getElementById('body_home').lastChild;
+  // First, let's get the last line posted
+  var lastline = e.previousSibling;
 
   // And if it's a mark or a previous date entry, let's remove it, we can use css + selectors for marks that follow
   if (lastline.id === 'mark' || lastline.className === 'date') {
-    document.getElementById('body_home').removeChild(lastline);
+    e.parentNode.removeChild(lastline);
   }
 
   // Create the date element: <div class="date"><hr /><span>...</span><hr /></div>
@@ -215,13 +209,9 @@ Textual.dateChanged = function () {
   // Set the span's content to the current date (Friday, October 14th)
   span.textContent = now.toLocaleDateString();
 
-  // We insert it before, if it was sent via newMessagePostedToView, insert after if called by Textual
-  if (e) {
-    e.parentElement.insertBefore(div, e);
-  } else {
-    document.getElementById('body_home').appendChild(div);
-  }
-};
+  // Insert the date before the newly posted message
+  e.parentElement.insertBefore(div, e);
+}
 
 /* When you join a channel, delete all the old disconnected messages */
 Textual.handleEvent = function (event) {
@@ -251,7 +241,7 @@ Textual.newMessagePostedToView = function (line) {
 
   // call the dateChanged() function, for any message with a timestamp
   if (message.getAttribute('timestamp')) {
-    Textual.dateChanged(parseFloat(message.getAttribute('timestamp')) * 1000, message);
+    dateChange(message.getAttribute('timestamp'), message);
   }
 
   // if it's a private message, colorize the nick and then track the state and fade away the nicks if needed
