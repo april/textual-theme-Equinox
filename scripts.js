@@ -8,7 +8,7 @@ var Equinox = {
   fadeNicks: true,            // fade out nicknames when they appear multiple times in a row
   fadeNicksFreq: 10,          // how frequently to display a nick if they have fadeNickCounts lines in a row
   showDateChanges: true,      // show date changes
-  squashModes: false,         // if a duplicate mode gets posted to the channel, squash it
+  squashModes: true,          // if a duplicate mode gets posted to the channel, squash it
   squashTopics: true          // if a duplicate topic gets posted to the channel, squash it
 };
 
@@ -20,11 +20,18 @@ var rs                  = { // room state
     month: 0,
     day: 0
   },
+  mode: {
+    mode: undefined
+  },
   nick: {
     count: 1,
     delete: false,
     id: undefined,
     nick: undefined
+  },
+  topic: {
+    delete: false,
+    topic: undefined
   }
 };
 
@@ -230,7 +237,7 @@ function dateChange(e) {
 
   // Reset the nick count back to 1, so the nick always shows up after a date change
   rs.nick.count = 1;
-  rs.nick.nick = '';
+  rs.nick.nick = undefined;
 }
 
 /* When you join a channel, delete all the old disconnected messages */
@@ -255,8 +262,8 @@ Textual.newMessagePostedToView = function (line) {
 
   // reset the message count and previous nick, when you rejoin a channel
   if (message.getAttribute('ltype') !== 'privmsg') {
-    rs.nick.nick = '';
     rs.nick.count = 1;
+    rs.nick.nick = undefined;
   }
 
   // call the dateChange() function, for any message with a timestamp
@@ -277,12 +284,12 @@ Textual.newMessagePostedToView = function (line) {
     }
 
     // Track the nicks that submit messages, so that we can space out everything
-    if ((rs.nick.nick === sender.innerHTML) && (rs.nick.count < Equinox.fadeNicksFreq)
+    if ((rs.nick.nick === sender.textContent) && (rs.nick.count < Equinox.fadeNicksFreq)
       && (message.getAttribute('ltype') !== 'action') && (Equinox.fadeNicks === true)) {
       rs.nick.delete = true;
       rs.nick.count += 1;
     } else {
-      rs.nick.nick = sender.innerHTML;
+      rs.nick.nick = sender.textContent;
       rs.nick.count  = 1;
       rs.nick.delete = false;
     }
@@ -313,28 +320,28 @@ Textual.newMessagePostedToView = function (line) {
 
     if (message.getAttribute('command') === '332') { // an actual topic change
       // hide the topic if it's the same topic again
-      if (topic === rs.previousTopic) {
+      if (topic === rs.topic.topic) {
         message.parentNode.removeChild(message);
-        rs.previousTopicDeleteSetBy = true;
+        rs.topic.delete = true;
       }
 
-      rs.previousTopic = topic;
+      rs.topic.topic = topic;
     }
 
-    if ((message.getAttribute('command') === '333') && (rs.previousTopicDeleteSetBy === true)) {
+    if ((message.getAttribute('command') === '333') && (rs.topic.delete === true)) {
       message.parentNode.removeChild(message);
-      rs.previousTopicDeleteSetBy = false;
+      rs.topic.delete = false;
     }
   }
 
   // much like we suppress duplicate topics, we want to suppress duplicate modes
   if (Equinox.squashModes === true && message.getAttribute('ltype') === 'mode') {
-    mode = message.getElementsByClassName('message')[0].getElementsByTagName('b')[0].textContent;
+    mode = message.getElementsByClassName('message')[0].textContent.replace(/\s+/, '');
 
-    if (mode === rs.previousMode) {
+    if (mode === rs.mode.mode) {
       message.parentNode.removeChild(message);
     } else {
-      rs.previousMode = mode;
+      rs.mode.mode = mode;
     }
   }
 
