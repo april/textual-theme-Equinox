@@ -15,7 +15,7 @@ var Equinox = {
 /* Set the default statuses for everything tracked in the roomState */
 var mappedSelectedUsers = [];
 var rs                  = { // room state
-  previousDate: {
+  date: {
     year: 0,
     month: 0,
     day: 0
@@ -161,56 +161,68 @@ function updateNicknameAssociatedWithNewMessage(e) {
 }
 
 /* Insert a date, if the date has changed from the previous message */
-function dateChange(timestamp, e) {
+function dateChange(e) {
   'use strict';
-  var year, month, day, now;
+  var timestamp, datetime, year, month, day, id;
+  var MAXTIMEOFFSET = 30000;  // 30 seconds
 
   // Only show date changes if the option is enabled
   if (!Equinox.showDateChanges) {
     return;
   }
 
-  now = new Date(parseFloat(timestamp) * 1000);
+  timestamp = parseFloat(e.getAttribute('timestamp')) * 1000;
+  datetime = new Date(timestamp);
 
-  year = now.getFullYear();
-  month = now.getMonth();
-  day = now.getDate();
+  year = datetime.getFullYear();
+  month = datetime.getMonth();
+  day = datetime.getDate();
+  id = 'date-' + String(year) + '-' + String(month + 1) + '-' + String(day);
 
-  // First, we make sure that the year, month, day are new; store them in roomstate if so
-  if (year === rs.previousDate.year &&
-      month === rs.previousDate.month &&
-      day === rs.previousDate.day) {
-    return;
+  // Occasionally when replaying, Textual will post messages in the future, and then jump backwards
+  // As such, we'll ignore all joins and topics, if they're more than MAXTIMEOFFSET milliseconds from the current time
+  if (e.getAttribute('ltype') === 'join' || e.getAttribute('ltype') === 'topic') {
+    if (Date.now() - timestamp > MAXTIMEOFFSET) {
+      return;
+    }
   }
-  else {
-    rs.previousDate = {
-      year: year,
-      month: month,
-      day: day
-    };
+
+  // If the date is the same, then there's nothing to do here
+  if (year === rs.date.year && month === rs.date.month && day === rs.date.day) {
+    return;
   }
 
   // First, let's get the last line posted
   var lastline = e.previousSibling;
 
   // And if it's a mark or a previous date entry, let's remove it, we can use css + selectors for marks that follow
-  if (lastline.id === 'mark' || lastline.className === 'date') {
-    e.parentNode.removeChild(lastline);
+  if (lastline) {
+    if (lastline.id === 'mark' || lastline.className === 'date') {
+      e.parentNode.removeChild(lastline);
+    }
   }
 
   // Create the date element: <div class="date"><hr /><span>...</span><hr /></div>
   var div = document.createElement('div');
   var span = document.createElement('span');
   div.className = 'date';
+  div.id = id;
   div.appendChild(document.createElement('hr'));
   div.appendChild(span);
   div.appendChild(document.createElement('hr'));
 
   // Set the span's content to the current date (Friday, October 14th)
-  span.textContent = now.toLocaleDateString();
+  span.textContent = datetime.toLocaleDateString();
 
   // Insert the date before the newly posted message
   e.parentElement.insertBefore(div, e);
+
+  // Update the previous state
+  rs.date = {
+    year: year,
+    month: month,
+    day: day
+  };
 }
 
 /* When you join a channel, delete all the old disconnected messages */
@@ -239,9 +251,9 @@ Textual.newMessagePostedToView = function (line) {
     rs.previousNickCount = 1;
   }
 
-  // call the dateChanged() function, for any message with a timestamp
+  // call the dateChange() function, for any message with a timestamp
   if (message.getAttribute('timestamp')) {
-    dateChange(message.getAttribute('timestamp'), message);
+    dateChange(message);
   }
 
   // if it's a private message, colorize the nick and then track the state and fade away the nicks if needed
