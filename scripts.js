@@ -20,8 +20,12 @@ var rs                  = { // room state
     month: 0,
     day: 0
   },
-  previousNickCount: 1,
-  previousNickDelete: false
+  nick: {
+    count: 1,
+    delete: false,
+    id: undefined,
+    nick: undefined
+  }
 };
 
 var NickColorGenerator = (function () {
@@ -223,6 +227,10 @@ function dateChange(e) {
     month: month,
     day: day
   };
+
+  // Reset the nick count back to 1, so the nick always shows up after a date change
+  rs.nick.count = 1;
+  rs.nick.nick = '';
 }
 
 /* When you join a channel, delete all the old disconnected messages */
@@ -247,8 +255,8 @@ Textual.newMessagePostedToView = function (line) {
 
   // reset the message count and previous nick, when you rejoin a channel
   if (message.getAttribute('ltype') !== 'privmsg') {
-    rs.previousNick = '';
-    rs.previousNickCount = 1;
+    rs.nick.nick = '';
+    rs.nick.count = 1;
   }
 
   // call the dateChange() function, for any message with a timestamp
@@ -262,25 +270,25 @@ Textual.newMessagePostedToView = function (line) {
     new NickColorGenerator(message); // colorized the nick
 
     // Delete (ie, make foreground and background color identical) the previous line's nick, if it was set to be deleted
-    if (rs.previousNickDelete === true) {
-      elem = document.getElementById(rs.previousNickMessageId).getElementsByClassName('sender')[0];
+    if (rs.nick.delete === true) {
+      elem = document.getElementById(rs.nick.id).getElementsByClassName('sender')[0];
       elem.className += ' f';
       elem.style.color = window.getComputedStyle(elem).backgroundColor;
     }
 
     // Track the nicks that submit messages, so that we can space out everything
-    if ((rs.previousNick === sender.innerHTML) && (rs.previousNickCount < Equinox.fadeNicksFreq)
+    if ((rs.nick.nick === sender.innerHTML) && (rs.nick.count < Equinox.fadeNicksFreq)
       && (message.getAttribute('ltype') !== 'action') && (Equinox.fadeNicks === true)) {
-      rs.previousNickDelete = true;
-      rs.previousNickCount += 1;
+      rs.nick.delete = true;
+      rs.nick.count += 1;
     } else {
-      rs.previousNick = sender.innerHTML;
-      rs.previousNickCount  = 1;
-      rs.previousNickDelete = false;
+      rs.nick.nick = sender.innerHTML;
+      rs.nick.count  = 1;
+      rs.nick.delete = false;
     }
 
     // Track the previous message's id
-    rs.previousNickMessageId = message.getAttribute('id');
+    rs.nick.id = message.getAttribute('id');
 
     // Copy the message into the hidden history
     clone = message.cloneNode(true);
@@ -292,7 +300,7 @@ Textual.newMessagePostedToView = function (line) {
       rs.history.removeChild(rs.history.childNodes[0]);
 
       // Hide the first nick in the hidden history, if it's the same as the second
-      if ((rs.previousNickCount > 1) && (message.getAttribute('ltype') !== 'action')) {
+      if ((rs.nick.count > 1) && (message.getAttribute('ltype') !== 'action')) {
         rs.history.getElementsByClassName('sender')[0].style.visibility = 'hidden';
       }
     }
