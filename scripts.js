@@ -174,7 +174,7 @@ function updateNicknameAssociatedWithNewMessage(e) {
 /* Insert a date, if the date has changed from the previous message */
 function dateChange(e) {
   'use strict';
-  var timestamp, datetime, year, month, day, id;
+  var timestamp, datetime, year, month, day, id, ltype;
   var MAXTIMEOFFSET = 30000;  // 30 seconds
 
   // Only show date changes if the option is enabled
@@ -191,8 +191,10 @@ function dateChange(e) {
   id = 'date-' + String(year) + '-' + String(month + 1) + '-' + String(day);
 
   // Occasionally when replaying, Textual will post messages in the future, and then jump backwards
-  // As such, we'll ignore all joins and topics, if they're more than MAXTIMEOFFSET milliseconds from the current time
-  if (e.getAttribute('ltype') === 'join' || e.getAttribute('ltype') === 'topic') {
+  // As such, we'll ignore all joins, modes, and topics, if they're more than MAXTIMEOFFSET milliseconds
+  // from the current time
+  ltype = e.getAttribute('ltype');
+  if (ltype === 'join' || ltype === 'topic' || ltype === 'mode') {
     if (Date.now() - timestamp > MAXTIMEOFFSET) {
       return;
     }
