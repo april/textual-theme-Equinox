@@ -600,6 +600,6 @@ body div.date > span {
     margin: 0 1em;
 }
 
-body div.date + div#mark {
+body div.date + div#mark, body div.date + div#historic_messages + div#mark {
   display: none;
 }

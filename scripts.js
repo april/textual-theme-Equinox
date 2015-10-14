@@ -44,7 +44,7 @@ var NickColorGenerator = (function () {
     // Start alternative nick colouring procedure
     var selectNick = message.querySelector('.sender');
     selectNick.removeAttribute('colornumber');
-    var nickcolor = this.generateColorFromHash(selectNick.getAttribute('nickname'));
+    var nickcolor = this.generateColorFromNickname(selectNick.getAttribute('nickname'));
 
     selectNick.style.color = nickcolor;
 
@@ -60,75 +60,45 @@ var NickColorGenerator = (function () {
       if (inlineNicks[i].getAttribute('mode').length > 0) {
         nick = nick.replace(inlineNicks[i].getAttribute('mode'), '');
       }
-      inlineNicks[i].style.color = this.generateColorFromHash(nick);
+      inlineNicks[i].style.color = this.generateColorFromNickname(nick);
     }
   }
 
-/*   Attempts to clean up a nickname by removing alternate characters from the end;
-     nc_ becomes nc, avidal` becomes avidal */
-  NickColorGenerator.prototype.sanitiseNickname = function (nick) {
-    nick = nick.toLowerCase();
-    nick = nick.replace(/[`_-]+$/, ''); // typically `, _, and - are used on the end of a nick
-    nick = nick.replace(/|.*$/, ''); // remove |<anything> from the end
-    return nick;
-  };
-
   NickColorGenerator.prototype.generateHashFromNickname = function (nick) {
-    var cleaned = this.sanitiseNickname(nick), h = 0, i;
+    var hash = 5381, i;
 
-    for (i = 0; i < cleaned.length; i++) {
-      h = cleaned.charCodeAt(i) + (h << 6) + (h << 16) - h;
+    /* First, sanitize the nickname */
+    nick = nick.toLowerCase();          // make them lowercase (so that April and april produce the same color)
+    nick = nick.replace(/[`_-]+$/, ''); // typically `, _, and - are used on the end of a nick
+    nick = nick.replace(/|.*$/, '');    // remove |<anything> from the end
+
+    // Courtesy of https://github.com/darkskyapp/string-hash/
+    i = nick.length;
+    while (i) {
+      hash = (hash * 33) ^ nick.charCodeAt(--i);
     }
-    return h;
+
+    return hash >>> 0;
   };
 
-  NickColorGenerator.prototype.generateColorFromHash = function (nick) {
+  NickColorGenerator.prototype.generateColorFromNickname = function (nick) {
     var nickhash = this.generateHashFromNickname(nick);
-    var deg      = nickhash % 360;
-    var h        = deg < 0 ? 360 + deg : deg;
-    var l        = Math.abs(nickhash) % 110;
-    var s;
 
-    // don't use the blue and purple hues
-    if (h >= 250 && h <= 290) {
-      h += 40;
-    }
-    if (h < 250 && h >= 210) {
-      h -= 40;
-    }
+    var h           = nickhash % 235 + 25;       // forbid the range 0-25 (reds), 210-280 (blues/purples, 330-360 (reds)
+    if (h >= 210) { h += 70; }
 
-    // shift the reds into pinks and oranges
-    if (h >= 330) {
-      h -= 30;
-    }
-    if (h < 25) {
-      h += 25;
+    var s           = nickhash * 17 % 50 + 45;   // saturation should be between 45 and 95
+    var l           = nickhash * 23 % 36 + 45;   // lightness  should be between 45 and 81
+
+    // give the pinks a wee bit more saturation and lightness
+    if (h >= 280) {
+      s += 5;
+      l += 5;
     }
 
-    if (h >= 30 && h <= 210) {
-      l = 60;
-    }
-
-    s = 20 + Math.abs(nickhash) % 70;
-    if (h >= 210 && s >= 80) {
-      s -= 30;
-    }
-
-    if ((h < 110 && s < 60) || (l <= 30)) {
-      l += 40;
-    }
-
-    if (l > 90) {
-      l -= 20;
-    }
-
-    // if the saturation is really low, bump up the luminance a bit
-    if (s < 40) {
-      l += 10;
-    }
-
-    return 'hsl(' + h + ',' + s + '%,' + l + '%)';
+    return 'hsl(' + String(h) + ',' + String(s) + '%,' + String(l) + '%)';
   };
+
   return NickColorGenerator;
 })();
 
@@ -212,6 +182,16 @@ function dateChange(e) {
   if (lastline) {
     if (lastline.id === 'mark' || lastline.className === 'date') {
       e.parentNode.removeChild(lastline);
+    }
+
+    // If the last line is the historic_messages div and its last child is a date, remove that too
+    if (lastline.id === 'historic_messages') {
+      var hmlastline = lastline.lastChild;
+      if (hmlastline) {
+        if (hmlastline.className === 'date') {
+          hmlastline.parentNode.removeChild(hmlastline);
+        }
+      }
     }
   }
 
