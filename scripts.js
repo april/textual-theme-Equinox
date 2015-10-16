@@ -430,18 +430,22 @@ Textual.viewInitiated = function () {
      also hide the topic bar when scrolling */
   window.onscroll = function () {
     var line, lines;
+    var topic = document.getElementById('topic_bar');
+
     lines = body.getElementsByClassName('line');
     if (lines.length < 2) {
       return;
     }
     line = lines[lines.length - 1];
 
-    if (isMessageInViewport(line) === false) { // scrollback
+    if (isMessageInViewport(line) === false) {
+      // scrollback
       rs.history.style.display = 'inline';
-      document.getElementById('topic_bar').style.visibility = 'hidden';
+      if (topic) { topic.style.visibility = 'hidden'; }
     } else {
-      rs.history.style.display = 'none'; // at the bottom
-      document.getElementById('topic_bar').style.visibility = 'visible';
+      // at the bottom
+      rs.history.style.display = 'none';
+      if (topic) { topic.style.visibility = 'visible'; }
     }
   };
 };
