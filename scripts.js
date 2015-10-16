@@ -144,7 +144,6 @@ function updateNicknameAssociatedWithNewMessage(e) {
 /* Insert a date, if the date has changed from the previous message */
 function dateChange(e) {
   'use strict';
-  console.log(e);
   var timestamp, datetime, year, month, day, id, ltype;
   var MAXTIMEOFFSET = 30000;  // 30 seconds
 
