@@ -144,6 +144,7 @@ function updateNicknameAssociatedWithNewMessage(e) {
 /* Insert a date, if the date has changed from the previous message */
 function dateChange(e) {
   'use strict';
+  console.log(e);
   var timestamp, datetime, year, month, day, id, ltype;
   var MAXTIMEOFFSET = 30000;  // 30 seconds
 
@@ -175,23 +176,25 @@ function dateChange(e) {
     return;
   }
 
+  var deleteLastlineDate = function (ll) {
+    if (ll) {
+      if ((ll.id === 'mark') || (ll.className === 'date')) {
+        ll.parentNode.removeChild(ll);
+      }
+    }
+  };
+
   // First, let's get the last line posted
   var lastline = e.previousSibling;
 
-  // And if it's a mark or a previous date entry, let's remove it, we can use css + selectors for marks that follow
   if (lastline) {
-    if (lastline.id === 'mark' || lastline.className === 'date') {
-      e.parentNode.removeChild(lastline);
-    }
+    // And if it's a mark or a previous date entry, let's remove it, we can use css + selectors for marks that follow
+    deleteLastlineDate(lastline);
 
-    // If the last line is the historic_messages div and its last child is a date, remove that too
+    // If the last line is the historic_messages div and its last child or previous sibling is a date, remove that too
     if (lastline.id === 'historic_messages') {
-      var hmlastline = lastline.lastChild;
-      if (hmlastline) {
-        if (hmlastline.className === 'date') {
-          hmlastline.parentNode.removeChild(hmlastline);
-        }
-      }
+      deleteLastlineDate(lastline.lastChild);
+      deleteLastlineDate(lastline.previousSibling);
     }
   }
 
@@ -246,11 +249,6 @@ Textual.newMessagePostedToView = function (line) {
   if (message.getAttribute('ltype') !== 'privmsg') {
     rs.nick.count = 1;
     rs.nick.nick = undefined;
-  }
-
-  // call the dateChange() function, for any message with a timestamp
-  if (message.getAttribute('timestamp')) {
-    dateChange(message);
   }
 
   // if it's a private message, colorize the nick and then track the state and fade away the nicks if needed
@@ -340,6 +338,11 @@ Textual.newMessagePostedToView = function (line) {
     if (app.channelIsJoined() &&
         (message.getElementsByClassName('message')[0].textContent.search('Disconnect') !== -1)) {
       message.parentNode.removeChild(message);
+    }
+  } else {
+    // call the dateChange() function, for any message with a timestamp that's not a debug message
+    if (message.getAttribute('timestamp')) {
+      dateChange(message);
     }
   }
 
