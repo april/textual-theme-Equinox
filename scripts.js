@@ -164,7 +164,7 @@ function dateChange(e) {
   // As such, we'll ignore all joins, modes, and topics, if they're more than MAXTIMEOFFSET milliseconds
   // from the current time
   ltype = e.getAttribute('ltype');
-  if (ltype === 'join' || ltype === 'topic' || ltype === 'mode') {
+  if (ltype !== 'privmsg') {
     if (Date.now() - timestamp > MAXTIMEOFFSET) {
       return;
     }
