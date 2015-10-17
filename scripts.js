@@ -84,16 +84,18 @@ var NickColorGenerator = (function () {
   NickColorGenerator.prototype.generateColorFromNickname = function (nick) {
     var nickhash = this.generateHashFromNickname(nick);
 
-    var h           = nickhash % 280; // forbid blues and purples (210-290)
-    if (h >= 210) { h += 80; }
+    var h           = nickhash % 360;
+    var s           = nickhash * 17 % 50 + 45;   // 50 - 95
+    var l           = nickhash * 23 % 36 + 45;   // 45 - 81
 
-    var s           = nickhash * 17 % 50 + 45;   // saturation should be between 50 and 95
-    var l           = nickhash * 23 % 36 + 45;   // lightness  should be between 45 and 81
-
-    // give the pinks a wee bit more saturation and lightness
+    // give the pinks a wee bit more lightness
     if (h >= 280 && h < 335) {
-      s += 5;
-      l += 5;
+      l = nickhash * 23 % 36 + 50; // 50 - 86
+    }
+
+    // Give the blues a smaller (but lighter) range
+    if (h >= 210 && h < 280) {
+      l = nickhash * 23 % 30 + 60; // 60 - 90
     }
 
     // Give the reds a bit less saturation
@@ -101,9 +103,9 @@ var NickColorGenerator = (function () {
       s = nickhash * 17 % 33 + 45; // 45 - 78
     }
 
-    // Give the greens a bit less saturation as well
-    if (h >= 90 && h <= 150) {
-      s = nickhash * 17 % 48 + 40; // 40 - 88
+    // Give the yellows and greens a bit less saturation as well
+    if (h >= 50 && h <= 150) {
+      s = nickhash * 17 % 50 + 40; // 40 - 90
     }
 
     return 'hsl(' + String(h) + ',' + String(s) + '%,' + String(l) + '%)';
