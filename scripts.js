@@ -84,16 +84,28 @@ var NickColorGenerator = (function () {
   NickColorGenerator.prototype.generateColorFromNickname = function (nick) {
     var nickhash = this.generateHashFromNickname(nick);
 
-    var h           = nickhash % 235 + 25;       // forbid the range 0-25 (reds), 210-280 (blues/purples, 330-360 (reds)
-    if (h >= 210) { h += 70; }
+    var h           = nickhash % 360;
+    var s           = nickhash * 17 % 50 + 45;   // 50 - 95
+    var l           = nickhash * 23 % 36 + 45;   // 45 - 81
 
-    var s           = nickhash * 17 % 50 + 45;   // saturation should be between 45 and 95
-    var l           = nickhash * 23 % 36 + 45;   // lightness  should be between 45 and 81
+    // give the pinks a wee bit more lightness
+    if (h >= 280 && h < 335) {
+      l = nickhash * 23 % 36 + 50; // 50 - 86
+    }
 
-    // give the pinks a wee bit more saturation and lightness
-    if (h >= 280) {
-      s += 5;
-      l += 5;
+    // Give the blues a smaller (but lighter) range
+    if (h >= 210 && h < 280) {
+      l = nickhash * 23 % 30 + 60; // 60 - 90
+    }
+
+    // Give the reds a bit less saturation
+    if (h <= 25 || h >= 335) {
+      s = nickhash * 17 % 33 + 45; // 45 - 78
+    }
+
+    // Give the yellows and greens a bit less saturation as well
+    if (h >= 50 && h <= 150) {
+      s = nickhash * 17 % 50 + 40; // 40 - 90
     }
 
     return 'hsl(' + String(h) + ',' + String(s) + '%,' + String(l) + '%)';
@@ -164,7 +176,7 @@ function dateChange(e) {
   // As such, we'll ignore all joins, modes, and topics, if they're more than MAXTIMEOFFSET milliseconds
   // from the current time
   ltype = e.getAttribute('ltype');
-  if (ltype === 'join' || ltype === 'topic' || ltype === 'mode') {
+  if (ltype !== 'privmsg') {
     if (Date.now() - timestamp > MAXTIMEOFFSET) {
       return;
     }
