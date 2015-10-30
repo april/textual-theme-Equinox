@@ -25,14 +25,15 @@
 
 		<span class="message" ltype="{{lineType}}">
 			<span class="senderContainer">
-				<span class="sender"
+				<span class="beforeNickname swrapper"></span><span class="sender"
 					onclick="Textual.nicknameMaybeWasDoubleClicked(this)"
 					oncontextmenu="Textual.openStandardNicknameContextualMenu()"
 					mtype="{{nicknameType}}"
 					nickname="{{nickname}}"
 					{{#nicknameColorHashingEnabled}}
 						colornumber="{{nicknameColorNumber}}"
-					{{/nicknameColorHashingEnabled}}>{{formattedNickname}}</span>
+					{{/nicknameColorHashingEnabled}}>{{formattedNickname}}</span><span
+					class="afterNickname swrapper"></span>
 			</span>
 
 			<span class="innerMessage">

@@ -254,12 +254,24 @@ Textual.handleEvent = function (event) {
 Textual.newMessagePostedToView = function (line) {
   'use strict';
   var message = document.getElementById('line-' + line);
-  var clone, elem, getEmbeddedImages, i, mode, messageText, sender, topic;
+  var clone, elem, getEmbeddedImages, i, mode, messageText, sender, topic, before, after;
 
   // reset the message count and previous nick, when you rejoin a channel
   if (message.getAttribute('ltype') !== 'privmsg') {
     rs.nick.count = 1;
     rs.nick.nick = undefined;
+  }
+
+  // decorate messages with hidden <nickname> and * nickname annotations for copying
+  if (message.getAttribute('ltype') === 'privmsg') {
+    before = message.getElementsByClassName('beforeNickname')[0];
+    after = message.getElementsByClassName('afterNickname')[0];
+    before.innerHTML = "&lt;";
+    after.innerHTML = "&gt;";
+  }
+  if (message.getAttribute('ltype') === 'action') {
+    before = message.getElementsByClassName('beforeNickname')[0];
+    before.innerHTML = "* ";
   }
 
   // if it's a private message, colorize the nick and then track the state and fade away the nicks if needed
