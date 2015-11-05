@@ -545,6 +545,7 @@ body .f {  /* fade out */
 .senderContainer {
   cursor: pointer;
   overflow: hidden;
+  white-space: nowrap;
 }
 
 body div.line[ltype=privmsg]:not(.selectedUser),
