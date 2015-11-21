@@ -20,6 +20,7 @@ body {
 
 p {
   overflow: visible !important;
+  margin: 0;
 }
 
 body .line {
@@ -256,9 +257,7 @@ body div[ltype=ctcp] .senderContainer,
 body div[ltype=notice] .senderContainer {
   color: #f00;
   font-weight: 700;
-  min-height:23px;
-  width: 134px;
-  padding-right:7px;
+  width: 11em;
   text-align:right;
   display:inline-block;
   overflow: auto;
@@ -282,11 +281,10 @@ body div.line[ltype=privmsg][highlight=false] {
 }
 
 body div[ltype=privmsg] .senderContainer {
-  /*  font-weight: 700; */
-  min-height:23px;
-  width: 134px;
+  width: 11em;
+  height: auto;
+  padding-right: 0.6em;
   border-right: 1px solid rgb(64, 64, 64);
-  padding-right:7px;
   background-color: #161616;
   text-align:right;
   display:inline-block;
@@ -334,13 +332,11 @@ body div[ltype=action] .senderContainer {
   top: 0;
   bottom: 0;
   left: 0;
-  width: 134px;
+  width: 11em;
   /*  font-weight: 700;*/
   border-top: 1px solid transparent;
   border-bottom: 1px solid transparent;
   background-color: #1d1d1d;
-  height:22px;
-  padding-right: 7px;
   text-align:right;
   display:inline-block;
   overflow: hidden;
@@ -348,7 +344,6 @@ body div[ltype=action] .senderContainer {
 
 body div.line[ltype=action] .message {
   word-break: break-word;
-  padding-top: 1px;
 }
 
 body div.line[ltype=action][highlight=true] .message {
@@ -364,7 +359,6 @@ body div.line[ltype=off-the-record-encryption-status] {
   z-index: 190;
   background: #2f2f2f;
   position: relative;
-  padding: 2px 0 2px 0;
   border-top: 1px solid #393939;
   border-bottom: 1px solid #393939;
 }
@@ -375,7 +369,7 @@ body div.line[ltype=debug] .message,
 body div.line[ltype=dcc-file-transfer] .message,
 body div.line[ltype=off-the-record-encryption-status] .message {
   text-indent: 0;
-  padding-left: 145px !important;
+  padding-left: 11em;
 }
 
 /* off-the-record-encryption-status Message Event */
@@ -390,22 +384,16 @@ body div.line[ltype=off-the-record-encryption-status]  .message {
 body div.line[command="372"],
 body div.line[command="721"] {
   border: none;
-  padding-top: 3px;
-  padding-bottom: 3px;
 }
 
 body div.line[command="375"],
 body div.line[command="720"] { /* Start. */
   border-bottom: none;
-  padding-top: 2px;
-  padding-bottom: 3px;
 }
 
 body div.line[command="376"],
 body div.line[command="722"] { /* End. */
   border-top: none;
-  padding-top: 3px;
-  padding-bottom: 3px;
 }
 
 body div.line[command="372"] .message,
@@ -420,24 +408,18 @@ body div.line[command="722"] .message {
 /* GENERAL EVENT */
 body span.message {
   position: relative;
-  padding-left: 150px;
-  /* padding-right: 25px; */
+  padding-left: 12em;
+  line-height: 1.8em;
   display: table-cell;
-  min-height: 22px;
-  line-height: 22px;
   overflow: visible !important;
 }
 
 body div.event span.time {
   color: #999;
-  line-height: 19px;
   display: table-cell;
 }
 
 body div.event span.message {
-  min-height: 19px;
-  line-height: 19px;
-  text-indent: -20px;
   padding-left: 0;
 }
 
@@ -450,15 +432,19 @@ body div.line[ltype=topic],
 body div.line[ltype=kill],
 body div.line[ltype=kick],
 body div.line[ltype=website] {
-  font-size: 85%;
-  min-height: 19px;
-  padding-left: 145px;
+  font-size: 0.85em;
+  padding-left: 12em;
   color: #a5b6ce;
   background: #1d1d1d;
 }
 
 body div.line[ltype=topic] span.message {
   text-indent: 0;
+}
+
+body div.event .message:before {
+  margin-left: 0.4em;
+  margin-right: 0.4em;
 }
 
 body div.line[ltype=nick] {
@@ -472,8 +458,6 @@ body div.line[ltype=kick] {
 body[dir=ltr] div[ltype=join] .message:before {
   content: "→";
   color: #0c0;
-  margin-left:3px;
-  margin-right: 5px;
 }
 
 
@@ -482,31 +466,23 @@ body[dir=ltr] div[ltype=part] .message:before,
 body[dir=ltr] div[ltype=quit] .message:before {
   content: "←";
   color: #e00;
-  margin-left:3px;
-  margin-right: 5px;
 }
 
 body[dir=ltr] div[ltype=nick] .message:before {
   content: "\2022";
   color: #37be34;
   font-weight: 700;
-  margin-left: 8px;
-  margin-right: 5px;
 }
 
 body[dir=ltr] div[ltype=mode] .message:before {
   content: "\2022";
   color: #2cb6f6;
   font-weight: 700;
-  margin-left: 8px;
-  margin-right: 5px;
 }
 
 body[dir=rtl] div[ltype=join] .message:before {
   content: "→";
   color: #0c0;
-  margin-left:3px;
-  margin-right: 5px;
 }
 
 body[dir=rtl] div[ltype=kick] .message:before,
@@ -514,8 +490,6 @@ body[dir=rtl] div[ltype=part] .message:before,
 body[dir=rtl] div[ltype=quit] .message:before {
   content: "←";
   color: #e00;
-  margin-left:3px;
-  margin-right: 5px;
 }
 
 /* Nickname Colors */
