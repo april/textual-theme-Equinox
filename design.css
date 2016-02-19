@@ -572,23 +572,23 @@ body div.line[ltype=action][highlight=true] {
 
 /* Date changes */
 body div.date {
-    display: flex;
-    display: -webkit-flex;
-    padding: .5em 0;
+  display: flex;
+  display: -webkit-flex;
+  padding: .5em 0;
 }
 
 body div.date > hr {
-    background: #444;
-    border: 0;
-    flex: 1;
-    height: 1px;
-    margin-top: .6em;
-    -webkit-flex: 1;
+  background: #444;
+  border: 0;
+  flex: 1;
+  height: 1px;
+  margin-top: .6em;
+  -webkit-flex: 1;
 }
 
 body div.date > span {
-    font-style: oblique;
-    margin: 0 1em;
+  font-style: oblique;
+  margin: 0 1em;
 }
 
 body div.date + div#mark, body div.date + div#historic_messages + div#mark {
