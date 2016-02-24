@@ -64,23 +64,6 @@ var NickColorGenerator = (function () {
     }
   }
 
-  // NickColorGenerator.prototype.generateHashFromNickname = function (nick) {
-  //   var hash = 5381, i;
-
-  //   /* First, sanitize the nickname */
-  //   nick = nick.toLowerCase();          // make them lowercase (so that April and april produce the same color)
-  //   nick = nick.replace(/[`_-]+$/, ''); // typically `, _, and - are used on the end of a nick
-  //   nick = nick.replace(/|.*$/, '');    // remove |<anything> from the end
-
-  //   // Courtesy of https://github.com/darkskyapp/string-hash/
-  //   i = nick.length;
-  //   while (i) {
-  //     hash = (hash * 33) ^ nick.charCodeAt(--i);
-  //   }
-
-  //   return hash >>> 0;
-  // };
-
   NickColorGenerator.prototype.generateColorFromNickname = function (nick) {
     // First, sanitize the nicknames
     nick = nick.toLowerCase();          // make them lowercase (so that April and april produce the same color)
