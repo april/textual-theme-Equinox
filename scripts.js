@@ -46,11 +46,11 @@ var NickColorGenerator = (function () {
     selectNick.removeAttribute('colornumber');
 
     inlineNicks = message.querySelectorAll('.inline_nickname');
-    
+
     this.generateColorFromNickname(selectNick.getAttribute('nickname'),
       function(nickcolor) {
         selectNick.style.color = nickcolor;
-        
+
         if (message.getAttribute('ltype') === 'action') {
           message.querySelector('.message').style.color = nickcolor;
         }
@@ -86,33 +86,33 @@ var NickColorGenerator = (function () {
       function(hhash) {
         var shash = hhash >>> 1;
         var lhash = hhash >>> 2;
-    
+
         var h       = hhash % 360;
         var s       = shash % 50 + 45;   // 50 - 95
         var l       = lhash % 36 + 45;   // 45 - 81
-    
+
         // give the pinks a wee bit more lightness
         if (h >= 280 && h < 335) {
           l = lhash % 36 + 50; // 50 - 86
         }
-    
+
         // Give the blues a smaller (but lighter) range
         if (h >= 210 && h < 280) {
           l = lhash % 25 + 65; // 65 - 90
         }
-    
+
         // Give the reds a bit less saturation
         if (h <= 25 || h >= 335) {
           s = shash % 33 + 45; // 45 - 78
         }
-    
+
         // Give the yellows and greens a bit less saturation as well
         if (h >= 50 && h <= 150) {
           s = shash % 50 + 40; // 40 - 90
         }
-      
+
         var nickcolor = 'hsl(' + String(h) + ',' + String(s) + '%,' + String(l) + '%)';
-    
+
         callbackFunction(nickcolor);
       }
     );
@@ -281,7 +281,6 @@ Textual.newMessagePostedToView = function (line) {
     if (rs.nick.delete === true) {
       elem = document.getElementById(rs.nick.id).getElementsByClassName('sender')[0];
       elem.className += ' f';
-      elem.style.color = window.getComputedStyle(elem).backgroundColor;
     }
 
     // Track the nicks that submit messages, so that we can space out everything
@@ -352,7 +351,7 @@ Textual.newMessagePostedToView = function (line) {
       function(returnValue) {
         if (returnValue == message.getElementsByClassName('message')[0].getElementsByTagName('b')[0].textContent) {
           message.parentNode.removeChild(message);
-        } 
+        }
       }
     );
   }
