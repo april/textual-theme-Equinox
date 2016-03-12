@@ -302,6 +302,11 @@ Textual.newMessagePostedToView = function (line) {
     clone.removeAttribute('id');
     rs.history.appendChild(clone);
 
+    // Colorize it as well
+    if (sender.getAttribute('coloroverride') !== 'true') {
+      new NickColorGenerator(clone); // colorized the nick
+    }
+
     // Remove old messages, if the history is longer than three messages
     if (rs.history.childElementCount > 2) {
       rs.history.removeChild(rs.history.childNodes[0]);
