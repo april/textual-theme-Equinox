@@ -6,6 +6,8 @@
 	<string>%@%n</string>
  	<key>Nickname Color Style</key>
 	<string>HSL-dark</string>
+	<key>Post Textual.handleEvent() Notifications</key>
+	<true/>
 	<key>Timestamp Format</key>
 	<string></string>
 	<key>Override Channel Font</key>
