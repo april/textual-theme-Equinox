@@ -262,7 +262,7 @@ Textual.handleEvent = function (event) {
 Textual.newMessagePostedToView = function (line) {
   'use strict';
   var message = document.getElementById('line-' + line);
-  var clone, elem, getEmbeddedImages, i, mode, messageText, sender, topic;
+  var clone, elem, getEmbeddedImages, i, mode, messageText, sender, topic, senderContainer, before, after;
 
   // reset the message count and previous nick, when you rejoin a channel
   if (message.getAttribute('ltype') !== 'privmsg') {
@@ -316,6 +316,25 @@ Textual.newMessagePostedToView = function (line) {
         rs.history.getElementsByClassName('sender')[0].style.visibility = 'hidden';
       }
     }
+  }
+
+  // decorate messages with hidden <nickname> and * nickname annotations for copying
+  senderContainer = message.getElementsByClassName('senderContainer')[0];
+  if (message.getAttribute('ltype') === 'privmsg') {
+    before = document.createElement('span');
+    before.className = "beforeNickname swrapper";
+    after = document.createElement('span');;
+    after.className = "afterNickname swrapper";
+    before.innerHTML = "&lt;";
+    after.innerHTML = "&gt;";
+    senderContainer.insertBefore(before, sender);
+    senderContainer.insertBefore(after, sender.nextSibling);
+  }
+  if (message.getAttribute('ltype') === 'action') {
+    before = document.createElement('span');
+    before.className = "beforeNickname swrapper";
+    before.innerHTML = "* ";
+    senderContainer.insertBefore(before, sender);
   }
 
   /* Let's kill topics that appear where they had already been set before
