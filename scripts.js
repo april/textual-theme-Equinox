@@ -128,8 +128,10 @@ function isMessageInViewport(elem) {
     return true;
   }
 
+  console.log(Math.floor(elem.getBoundingClientRect().bottom), Math.floor(document.documentElement.clientHeight));
+
   // Have to use Math.floor() because sometimes the getBoundingClientRect().bottom is a fraction of a pixel (!!!)
-  return (Math.floor(elem.getBoundingClientRect().bottom) <= Math.floor(document.documentElement.clientHeight));
+  return (Math.floor(elem.getBoundingClientRect().bottom - 1) <= Math.floor(document.documentElement.clientHeight));
 }
 
 function toggleSelectionStatusForNicknameInsideElement(e) {
@@ -441,7 +443,7 @@ Textual.viewBodyDidLoad = function () {
   setTimeout(function () {
     Textual.scrollToBottomOfView();
   }, 500);
-  
+
   /* Disable date changes on OS X Mountain Lion because WebKit does not have some of
      the features that this feature depends on (e.g. -webkit-flex) */
   if (document.documentElement.getAttribute("systemversion").indexOf("10.8.") === 0) {
@@ -460,7 +462,7 @@ Textual.viewInitiated = function () {
 
   /* setup the scrolling event to display the hidden history if the bottom element isn't in the viewport
      also hide the topic bar when scrolling */
-  window.onscroll = function () {
+  window.addEventListener('scroll', function () {
     var line, lines;
     var topic = document.getElementById('topic_bar');
 
@@ -479,5 +481,5 @@ Textual.viewInitiated = function () {
       rs.history.style.display = 'none';
       if (topic) { topic.style.visibility = 'visible'; }
     }
-  };
+  });
 };
