@@ -128,8 +128,6 @@ function isMessageInViewport(elem) {
     return true;
   }
 
-  console.log(Math.floor(elem.getBoundingClientRect().bottom), Math.floor(document.documentElement.clientHeight));
-
   // Have to use Math.floor() because sometimes the getBoundingClientRect().bottom is a fraction of a pixel (!!!)
   return (Math.floor(elem.getBoundingClientRect().bottom - 1) <= Math.floor(document.documentElement.clientHeight));
 }
