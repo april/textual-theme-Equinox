@@ -479,7 +479,7 @@ Textual.viewFinishedLoadingHistory = function () {
   // enable the history view, but only a bit after this gets called
   setTimeout(function() {
     rs.enableHistoryView = true;
-  }, 750);
+  }, 850);
 }
 
 Textual.viewInitiated = function () {
