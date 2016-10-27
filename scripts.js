@@ -129,7 +129,30 @@ function isMessageInViewport(elem) {
   }
 
   // Have to use Math.floor() because sometimes the getBoundingClientRect().bottom is a fraction of a pixel (!!!)
-  return (Math.floor(elem.getBoundingClientRect().bottom - 1) <= Math.floor(document.documentElement.clientHeight));
+  return (Math.floor(elem.getBoundingClientRect().bottom) - 1) <= Math.floor(document.documentElement.clientHeight);
+}
+
+function toggleHistoryIfScrolled() {
+  'use strict';
+
+  var line, lines;
+  var topic = document.getElementById('topic_bar');
+
+  lines = document.getElementById('body_home').getElementsByClassName('line');
+  if (lines.length < 2) {
+    return;
+  }
+  line = lines[lines.length - 1];
+
+  if (isMessageInViewport(line) === false) {
+    // scrollback
+    rs.history.style.display = 'inline';
+    if (topic) { topic.style.visibility = 'hidden'; }
+  } else {
+    // at the bottom
+    rs.history.style.display = 'none';
+    if (topic) { topic.style.visibility = 'visible'; }
+  }
 }
 
 function toggleSelectionStatusForNicknameInsideElement(e) {
@@ -459,25 +482,9 @@ Textual.viewInitiated = function () {
   rs.history = div;
 
   /* setup the scrolling event to display the hidden history if the bottom element isn't in the viewport
-     also hide the topic bar when scrolling */
+     also hide the topic bar when scrolling.  Note that we have to set a timer here so that the history
+     div doesn't appear in the viewport on normal inserts, which cause scroll effects */
   window.addEventListener('scroll', function () {
-    var line, lines;
-    var topic = document.getElementById('topic_bar');
-
-    lines = body.getElementsByClassName('line');
-    if (lines.length < 2) {
-      return;
-    }
-    line = lines[lines.length - 1];
-
-    if (isMessageInViewport(line) === false) {
-      // scrollback
-      rs.history.style.display = 'inline';
-      if (topic) { topic.style.visibility = 'hidden'; }
-    } else {
-      // at the bottom
-      rs.history.style.display = 'none';
-      if (topic) { topic.style.visibility = 'visible'; }
-    }
+    rs.scrollTimer = setTimeout(toggleHistoryIfScrolled, 100);
   });
 };
