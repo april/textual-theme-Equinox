@@ -20,6 +20,7 @@ var rs                  = { // room state
     month: 0,
     day: 0
   },
+  enableHistoryView: false,  // this doesn't get enabled until the history has finished loading
   mode: {
     mode: undefined
   },
@@ -461,9 +462,9 @@ Textual.viewBodyDidLoad = function () {
   'use strict';
   Textual.fadeOutLoadingScreen(1.00, 0.95);
 
-  setTimeout(function () {
-    Textual.scrollToBottomOfView();
-  }, 500);
+  // setTimeout(function () {
+  //   Textual.scrollToBottomOfView();
+  // }, 500);
 
   /* Disable date changes on OS X Mountain Lion because WebKit does not have some of
      the features that this feature depends on (e.g. -webkit-flex) */
@@ -471,6 +472,15 @@ Textual.viewBodyDidLoad = function () {
     Equinox.showDateChanges = false;
   }
 };
+
+Textual.viewFinishedLoadingHistory = function () {
+  'use strict';
+
+  // enable the history view, but only a bit after this gets called
+  setTimeout(function() {
+    rs.enableHistoryView = true;
+  }, 750);
+}
 
 Textual.viewInitiated = function () {
   'use strict';
@@ -485,6 +495,11 @@ Textual.viewInitiated = function () {
      also hide the topic bar when scrolling.  Note that we have to set a timer here so that the history
      div doesn't appear in the viewport on normal inserts, which cause scroll effects */
   window.addEventListener('scroll', function () {
+    // check to see if a bit of time has passed since we loaded the history
+    if (!rs.enableHistoryView) {
+      return;
+    }
+
     rs.scrollTimer = setTimeout(toggleHistoryIfScrolled, 100);
   });
 };
