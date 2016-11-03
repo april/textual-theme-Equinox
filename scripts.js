@@ -156,35 +156,6 @@ function toggleHistoryIfScrolled() {
   }
 }
 
-function toggleSelectionStatusForNicknameInsideElement(e) {
-  'use strict';
-  /* e is nested as the .sender so we have to go three parents
-   up in order to reach the parent div that owns it. */
-  var parentSelector = e.parentNode.parentNode.parentNode.parentNode;
-
-  parentSelector.classList.toggle('selectedUser');
-}
-
-function updateNicknameAssociatedWithNewMessage(e) {
-  'use strict';
-  /* We only want to target plain text messages. */
-  var acceptedElementTypes = ['privmsg', 'action', 'notice'], elementType = e.getAttribute('ltype'), nickname, senderSelector;
-
-  if (acceptedElementTypes.indexOf(elementType) !== -1) {
-    /* Get the nickname information. */
-    senderSelector = e.querySelector('.sender');
-    if (senderSelector) {
-      /* Is this a mapped user? */
-      nickname = senderSelector.getAttribute('nickname');
-
-      /* If mapped, toggle status on for new message. */
-      if (mappedSelectedUsers.indexOf(nickname) > -1) {
-        toggleSelectionStatusForNicknameInsideElement(senderSelector);
-      }
-    }
-  }
-}
-
 /* Insert a date, if the date has changed from the previous message */
 function dateChange(e) {
   'use strict';
@@ -422,40 +393,12 @@ Textual.newMessagePostedToView = function (line) {
     }
   }
 
-  updateNicknameAssociatedWithNewMessage(message);
+  ConversationTracking.updateNicknameWithNewMessage(message);
 };
 
 /* This is called when a .sender is clicked */
 Textual.nicknameSingleClicked = function (e) {
-  'use strict';
-  var allLines, documentBody, i, sender;
-  var nickname = e.getAttribute('nickname');
-  var mappedIndex = mappedSelectedUsers.indexOf(nickname);
-
-  if (mappedIndex === -1) {
-    mappedSelectedUsers.push(nickname);
-  } else {
-    mappedSelectedUsers.splice(mappedIndex, 1);
-  }
-
-  /* Gather basic information. */
-  documentBody = document.getElementById('body_home');
-
-  allLines = documentBody.querySelectorAll('div[ltype="privmsg"], div[ltype="action"]');
-
-  /* Update all elements of the DOM matching conditions. */
-  for (i = 0; i < allLines.length; i++) {
-    sender = allLines[i].querySelectorAll('.sender');
-
-    if (sender.length > 0) {
-      if (sender[0].getAttribute('nickname') === nickname) {
-
-        /* e is nested as the .sender so we have to go three parents
-         up in order to reach the parent div that owns it. */
-        toggleSelectionStatusForNicknameInsideElement(sender[0]);
-      }
-    }
-  }
+  ConversationTracking.nicknameSingleClickEventCallback(e);
 };
 
 Textual.viewBodyDidLoad = function () {
