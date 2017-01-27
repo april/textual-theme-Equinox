@@ -16,9 +16,10 @@ A massive overhaul of the nox theme for Textual 5:
 ## Install Instructions (Local):
 1. Download the the theme by clicking the "Download Zip" button on the right-hand side.
 2. Unzip the the compressed file.
-3a. App Store Version: Copy the resulting folder to the following location: [~/Library/Group Containers/8482Q6EPL6.com.codeux.irc.textual/Library/Application Support/Textual/Styles/](file://~/Library/Group Containers/8482Q6EPL6.com.codeux.irc.textual/Library/Application Support/Textual/Styles/)
-3b. Purchased version: Copy the resulting folder to the following location: [~/Library/Group\ Containers/com.codeux.apps.textual/Library/Application\ Support/Textual/Styles/](file://~/Library/Group\ Containers/com.codeux.apps.textual/Library/Application\ Support/Textual/Styles/)
-4. Rename folder to "Equinox"
+3. Copy the resulting folder to the following location:
+   1. **App Store Version:** [~/Library/Group Containers/8482Q6EPL6.com.codeux.irc.textual/Library/Application Support/Textual/Styles/](file://~/Library/Group Containers/8482Q6EPL6.com.codeux.irc.textual/Library/Application Support/Textual/Styles/)  
+   2. **Purchased version:** [~/Library/Group Containers/com.codeux.apps.textual/Library/Application Support/Textual/Styles/](file://~/Library/Group Containers/com.codeux.apps.textual/Library/Application Support/Textual/Styles/)
+4. Rename folder to "Equinox".
 
 ## Install Instructions (iCloud):
 1. Download the the theme by clicking the "Download Zip" button on the right-hand side.
@@ -26,5 +27,5 @@ A massive overhaul of the nox theme for Textual 5:
 3. Open iCloud Drive in Finder by going to Go -> iCloud Drive (Or pressing ⌘⇧i).
 4. Click the "Textual IRC Client" folder inside.
 5. Copy the folder from the compressed file into the "Styles" folder within.
-6. Rename folder to "Equinox"
+6. Rename folder to "Equinox".
 
