@@ -56,6 +56,10 @@ body[customscroller="true"]::-webkit-scrollbar {
   width: 17px;
 }
 
+body[customscroller="true"]::-webkit-scrollbar:horizontal {
+	height: 0;
+}
+
 body[customscroller="true"]::-webkit-scrollbar-track {
   background: #393939;
   box-shadow: inset 1px 0px 0px 0px #4b4b4b;
@@ -257,9 +261,25 @@ body[dir=ltr] div[ltype=action] .sender:before {
 }
 
 /* Historic / Log readback */
-#historic_messages,
-#body_home > .historic {
-  opacity: 0.83;
+
+#historic_messages {
+	transition: opacity 0.8s ease-in;
+	opacity: 0;
+	height: 0;
+	margin: 0;
+	padding: 0;
+}
+
+#historic_messages.loaded {
+	height: auto;
+}
+
+#historic_messages[isreload="false"].loaded {
+	opacity: 0.6;
+}
+
+#historic_messages[isreload="true"].loaded {
+	opacity: 1.0;
 }
 
 /* NOTICE/CTCP/WALLOPS */
