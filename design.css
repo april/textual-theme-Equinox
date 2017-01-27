@@ -14,7 +14,7 @@ body {
   background-color: #1d1d1d;
   font-family: "Helvetica Neue";
   font-weight: 200;
-  overflow-y: visible;
+  overflow-y: auto;
 }
 
 p {
@@ -48,6 +48,33 @@ body[dir=rtl] .senderContainer {
 /* Hide some internal stuff. */
 #timestampWidth {
   display: none;
+}
+
+/* Scrolling */
+
+body[customscroller="true"]::-webkit-scrollbar {
+  width: 17px;
+}
+
+body[customscroller="true"]::-webkit-scrollbar:horizontal {
+	height: 0;
+}
+
+body[customscroller="true"]::-webkit-scrollbar-track {
+  background: #393939;
+  box-shadow: inset 1px 0px 0px 0px #4b4b4b;
+}
+
+body[customscroller="true"]::-webkit-scrollbar-thumb {
+  background-color: #7c7c7c;
+  border: 4px solid transparent;
+  border-left: 5px solid transparent;
+  border-radius: 20px;
+  background-clip: content-box;
+}
+
+body[customscroller="true"]::-webkit-scrollbar-thumb:hover {
+  background-color: #b0b0b0;
 }
 
 /* Loading Screen */
@@ -234,9 +261,25 @@ body[dir=ltr] div[ltype=action] .sender:before {
 }
 
 /* Historic / Log readback */
-#historic_messages,
-#body_home > .historic {
-  opacity: 0.83;
+
+#historic_messages {
+	transition: opacity 0.8s ease-in;
+	opacity: 0;
+	height: 0;
+	margin: 0;
+	padding: 0;
+}
+
+#historic_messages.loaded {
+	height: auto;
+}
+
+#historic_messages[isreload="false"].loaded {
+	opacity: 0.6;
+}
+
+#historic_messages[isreload="true"].loaded {
+	opacity: 1.0;
 }
 
 /* NOTICE/CTCP/WALLOPS */
@@ -527,6 +570,7 @@ body .sender {
 
 body .f {  /* fade out */
   -webkit-transition: color .75s;
+  color: rgb(22, 22, 22) !important;
 }
 
 

@@ -20,6 +20,7 @@ var rs                  = { // room state
     month: 0,
     day: 0
   },
+  enableHistoryView: false,  // this doesn't get enabled until the history has finished loading
   mode: {
     mode: undefined
   },
@@ -44,62 +45,78 @@ var NickColorGenerator = (function () {
     // Start alternative nick colouring procedure
     var selectNick = message.querySelector('.sender');
     selectNick.removeAttribute('colornumber');
-    var nickcolor = this.generateColorFromNickname(selectNick.getAttribute('nickname'));
-
-    selectNick.style.color = nickcolor;
 
     inlineNicks = message.querySelectorAll('.inline_nickname');
 
-    if (message.getAttribute('ltype') === 'action') {
-      message.querySelector('.message').style.color = nickcolor;
-    }
+    this.generateColorFromNickname(selectNick.getAttribute('nickname'),
+      function(nickcolor) {
+        selectNick.style.color = nickcolor;
 
+        if (message.getAttribute('ltype') === 'action') {
+          message.querySelector('.message').style.color = nickcolor;
+        }
+      }
+    );
+
+    var self = this;
     for (i = 0; i < inlineNicks.length; i++) {
       inlineNicks[i].removeAttribute('colornumber');
       nick = inlineNicks[i].textContent;
       if (inlineNicks[i].getAttribute('mode').length > 0) {
         nick = nick.replace(inlineNicks[i].getAttribute('mode'), '');
       }
-      inlineNicks[i].style.color = this.generateColorFromNickname(nick);
+      var inlineNick = inlineNicks[i];
+      (function(inlineNickname) {
+        self.generateColorFromNickname(nick,
+          function(nickcolor) {
+            inlineNickname.style.color = nickcolor;
+          }
+        );
+      })(inlineNick);
     }
   }
 
-  NickColorGenerator.prototype.generateColorFromNickname = function (nick) {
+  NickColorGenerator.prototype.generateColorFromNickname = function (nick, callbackFunction) {
     // First, sanitize the nicknames
-    nick = nick.toLowerCase();          // make them lowercase (so that April and april produce the same color)
+    nick = nick.toLowerCase();      // make them lowercase (so that April and april produce the same color)
     nick = nick.replace(/[`_-]+$/, ''); // typically `, _, and - are used on the end of a nick
-    nick = nick.replace(/|.*$/, '');    // remove |<anything> from the end
+    nick = nick.replace(/|.*$/, '');  // remove |<anything> from the end
 
     // Generate the hashes
-    var hhash = app.nicknameColorStyleHash(nick, 'HSL-dark');
-    var shash = hhash >>> 1;
-    var lhash = hhash >>> 2;
+    app.nicknameColorStyleHash(nick, 'HSL-dark',
+      function(hhash) {
+        var shash = hhash >>> 1;
+        var lhash = hhash >>> 2;
 
-    var h           = hhash % 360;
-    var s           = shash % 50 + 45;   // 50 - 95
-    var l           = lhash % 36 + 45;   // 45 - 81
+        var h       = hhash % 360;
+        var s       = shash % 50 + 45;   // 50 - 95
+        var l       = lhash % 36 + 45;   // 45 - 81
 
-    // give the pinks a wee bit more lightness
-    if (h >= 280 && h < 335) {
-      l = lhash % 36 + 50; // 50 - 86
-    }
+        // give the pinks a wee bit more lightness
+        if (h >= 280 && h < 335) {
+          l = lhash % 36 + 50; // 50 - 86
+        }
 
-    // Give the blues a smaller (but lighter) range
-    if (h >= 210 && h < 280) {
-      l = lhash % 25 + 65; // 65 - 90
-    }
+        // Give the blues a smaller (but lighter) range
+        if (h >= 210 && h < 280) {
+          l = lhash % 25 + 65; // 65 - 90
+        }
 
-    // Give the reds a bit less saturation
-    if (h <= 25 || h >= 335) {
-      s = shash % 33 + 45; // 45 - 78
-    }
+        // Give the reds a bit less saturation
+        if (h <= 25 || h >= 335) {
+          s = shash % 33 + 45; // 45 - 78
+        }
 
-    // Give the yellows and greens a bit less saturation as well
-    if (h >= 50 && h <= 150) {
-      s = shash % 50 + 40; // 40 - 90
-    }
+        // Give the yellows and greens a bit less saturation as well
+        if (h >= 50 && h <= 150) {
+          s = shash % 50 + 40; // 40 - 90
+        }
 
-    return 'hsl(' + String(h) + ',' + String(s) + '%,' + String(l) + '%)';
+        var nickcolor = 'hsl(' + String(h) + ',' + String(s) + '%,' + String(l) + '%)';
+
+        callbackFunction(nickcolor);
+      }
+    );
   };
 
   return NickColorGenerator;
@@ -113,35 +130,29 @@ function isMessageInViewport(elem) {
   }
 
   // Have to use Math.floor() because sometimes the getBoundingClientRect().bottom is a fraction of a pixel (!!!)
-  return (Math.floor(elem.getBoundingClientRect().bottom) <= Math.floor(document.documentElement.clientHeight));
+  return (Math.floor(elem.getBoundingClientRect().bottom) - 1) <= Math.floor(document.documentElement.clientHeight);
 }
 
-function toggleSelectionStatusForNicknameInsideElement(e) {
+function toggleHistoryIfScrolled() {
   'use strict';
-  /* e is nested as the .sender so we have to go three parents
-   up in order to reach the parent div that owns it. */
-  var parentSelector = e.parentNode.parentNode.parentNode.parentNode;
 
-  parentSelector.classList.toggle('selectedUser');
-}
+  var line, lines;
+  var topic = document.getElementById('topic_bar');
 
-function updateNicknameAssociatedWithNewMessage(e) {
-  'use strict';
-  /* We only want to target plain text messages. */
-  var acceptedElementTypes = ['privmsg', 'action', 'notice'], elementType = e.getAttribute('ltype'), nickname, senderSelector;
+  lines = document.getElementById('body_home').getElementsByClassName('line');
+  if (lines.length < 2) {
+    return;
+  }
+  line = lines[lines.length - 1];
 
-  if (acceptedElementTypes.indexOf(elementType) !== -1) {
-    /* Get the nickname information. */
-    senderSelector = e.querySelector('.sender');
-    if (senderSelector) {
-      /* Is this a mapped user? */
-      nickname = senderSelector.getAttribute('nickname');
-
-      /* If mapped, toggle status on for new message. */
-      if (mappedSelectedUsers.indexOf(nickname) > -1) {
-        toggleSelectionStatusForNicknameInsideElement(senderSelector);
-      }
-    }
+  if (isMessageInViewport(line) === false) {
+    // scrollback
+    rs.history.style.display = 'inline';
+    if (topic) { topic.style.visibility = 'hidden'; }
+  } else {
+    // at the bottom
+    rs.history.style.display = 'none';
+    if (topic) { topic.style.visibility = 'visible'; }
   }
 }
 
@@ -236,7 +247,7 @@ Textual.handleEvent = function (event) {
   if (event === 'channelJoined') {
     messages = document.querySelectorAll('div[command="-100"]');
     for (i = 0; i < messages.length; i++) {
-      if (app.channelIsJoined() && (messages[i].getElementsByClassName('message')[0].textContent.search('Disconnect') !== -1)) {
+      if (messages[i].getElementsByClassName('message')[0].textContent.search('Disconnect') !== -1) {
         messages[i].parentNode.removeChild(messages[i]);
       }
     }
@@ -258,14 +269,13 @@ Textual.newMessagePostedToView = function (line) {
   if (message.getAttribute('ltype') === 'privmsg' || message.getAttribute('ltype') === 'action') {
     sender = message.getElementsByClassName('sender')[0];
     if (sender.getAttribute('coloroverride') !== 'true') {
-        new NickColorGenerator(message); // colorized the nick
+      new NickColorGenerator(message); // colorized the nick
     }
 
     // Delete (ie, make foreground and background color identical) the previous line's nick, if it was set to be deleted
     if (rs.nick.delete === true) {
       elem = document.getElementById(rs.nick.id).getElementsByClassName('sender')[0];
       elem.className += ' f';
-      elem.style.color = window.getComputedStyle(elem).backgroundColor;
     }
 
     // Track the nicks that submit messages, so that we can space out everything
@@ -286,6 +296,11 @@ Textual.newMessagePostedToView = function (line) {
     clone = message.cloneNode(true);
     clone.removeAttribute('id');
     rs.history.appendChild(clone);
+
+    // Colorize it as well
+    if (sender.getAttribute('coloroverride') !== 'true') {
+      new NickColorGenerator(clone); // colorized the nick
+    }
 
     // Remove old messages, if the history is longer than three messages
     if (rs.history.childElementCount > 2) {
@@ -332,18 +347,25 @@ Textual.newMessagePostedToView = function (line) {
 
   // hide messages about yourself joining
   if ((message.getAttribute('ltype') === 'join') || (message.getAttribute('ltype') === 'part')) {
-    if (message.getElementsByClassName('message')[0].getElementsByTagName('b')[0].textContent === app.localUserNickname()) {
-      message.parentNode.removeChild(message);
-    }
+    app.localUserNickname(
+      function(returnValue) {
+        if (returnValue == message.getElementsByClassName('message')[0].getElementsByTagName('b')[0].textContent) {
+          message.parentNode.removeChild(message);
+        }
+      }
+    );
   }
 
   /* clear out all the old disconnect messages, if you're currently connected to the channel
      note that normally Textual.handleEvent will catch this, but if you reload a theme, they will reappear */
   if ((message.getAttribute('ltype') === 'debug') && (message.getAttribute('command') === '-100')) {
-    if (app.channelIsJoined() &&
-        (message.getElementsByClassName('message')[0].textContent.search('Disconnect') !== -1)) {
-      message.parentNode.removeChild(message);
-    }
+    app.channelIsJoined(
+      function(returnValue) {
+        if (returnValue && message.getElementsByClassName('message')[0].textContent.search('Disconnect') !== -1) {
+          message.parentNode.removeChild(message);
+        }
+      }
+    );
   } else {
     // call the dateChange() function, for any message with a timestamp that's not a debug message
     if (message.getAttribute('timestamp')) {
@@ -371,56 +393,37 @@ Textual.newMessagePostedToView = function (line) {
     }
   }
 
-  updateNicknameAssociatedWithNewMessage(message);
+  ConversationTracking.updateNicknameWithNewMessage(message);
 };
 
 /* This is called when a .sender is clicked */
 Textual.nicknameSingleClicked = function (e) {
-  'use strict';
-  var allLines, documentBody, i, sender;
-  var nickname = e.getAttribute('nickname');
-  var mappedIndex = mappedSelectedUsers.indexOf(nickname);
-
-  if (mappedIndex === -1) {
-    mappedSelectedUsers.push(nickname);
-  } else {
-    mappedSelectedUsers.splice(mappedIndex, 1);
-  }
-
-  /* Gather basic information. */
-  documentBody = document.getElementById('body_home');
-
-  allLines = documentBody.querySelectorAll('div[ltype="privmsg"], div[ltype="action"]');
-
-  /* Update all elements of the DOM matching conditions. */
-  for (i = 0; i < allLines.length; i++) {
-    sender = allLines[i].querySelectorAll('.sender');
-
-    if (sender.length > 0) {
-      if (sender[0].getAttribute('nickname') === nickname) {
-
-        /* e is nested as the .sender so we have to go three parents
-         up in order to reach the parent div that owns it. */
-        toggleSelectionStatusForNicknameInsideElement(sender[0]);
-      }
-    }
-  }
-};
-
-/* Don't jump back to the bottom of the window when the view becomes visible */
-Textual.notifyDidBecomeVisible = function () {
-  'use strict';
-  window.getSelection().empty();
+  ConversationTracking.nicknameSingleClickEventCallback(e);
 };
 
 Textual.viewBodyDidLoad = function () {
   'use strict';
   Textual.fadeOutLoadingScreen(1.00, 0.95);
 
-  setTimeout(function () {
-    Textual.scrollToBottomOfView();
-  }, 500);
+  // setTimeout(function () {
+  //   Textual.scrollToBottomOfView();
+  // }, 500);
+
+  /* Disable date changes on OS X Mountain Lion because WebKit does not have some of
+     the features that this feature depends on (e.g. -webkit-flex) */
+  if (document.documentElement.getAttribute("systemversion").indexOf("10.8.") === 0) {
+    Equinox.showDateChanges = false;
+  }
 };
+
+Textual.viewFinishedLoadingHistory = function () {
+  'use strict';
+
+  // enable the history view, but only a bit after this gets called
+  setTimeout(function() {
+    rs.enableHistoryView = true;
+  }, 850);
+}
 
 Textual.viewInitiated = function () {
   'use strict';
@@ -432,25 +435,14 @@ Textual.viewInitiated = function () {
   rs.history = div;
 
   /* setup the scrolling event to display the hidden history if the bottom element isn't in the viewport
-     also hide the topic bar when scrolling */
-  window.onscroll = function () {
-    var line, lines;
-    var topic = document.getElementById('topic_bar');
-
-    lines = body.getElementsByClassName('line');
-    if (lines.length < 2) {
+     also hide the topic bar when scrolling.  Note that we have to set a timer here so that the history
+     div doesn't appear in the viewport on normal inserts, which cause scroll effects */
+  window.addEventListener('scroll', function () {
+    // check to see if a bit of time has passed since we loaded the history
+    if (!rs.enableHistoryView) {
       return;
     }
-    line = lines[lines.length - 1];
 
-    if (isMessageInViewport(line) === false) {
-      // scrollback
-      rs.history.style.display = 'inline';
-      if (topic) { topic.style.visibility = 'hidden'; }
-    } else {
-      // at the bottom
-      rs.history.style.display = 'none';
-      if (topic) { topic.style.visibility = 'visible'; }
-    }
-  };
+    rs.scrollTimer = setTimeout(toggleHistoryIfScrolled, 100);
+  });
 };

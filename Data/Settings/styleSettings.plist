@@ -2,10 +2,14 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>Channel View Overlay Color</key>
+	<string>#00000066</string>
 	<key>Nickname Format</key>
 	<string>%@%n</string>
  	<key>Nickname Color Style</key>
 	<string>HSL-dark</string>
+	<key>Post Textual.handleEvent() Notifications</key>
+	<true/>
 	<key>Timestamp Format</key>
 	<string></string>
 	<key>Override Channel Font</key>
