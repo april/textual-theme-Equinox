@@ -3,7 +3,7 @@ textual-theme-Equinox
 
 A massive overhaul of the nox theme for Textual 5:
 
-![Preview Image](http://i.imgur.com/xgOvbEA.png)
+![Preview Image](https://i.imgur.com/xgOvbEA.png)
 (with Monaco 11pt, the recommended font)
 
 **Equinox** includes the following changes:
