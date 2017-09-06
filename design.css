@@ -241,9 +241,8 @@ body img {
   height: 25px;
 }
 
-
 /* Remember Line */
-div[id=mark] {
+#mark {
   position: relative;
   z-index: 295;
   margin-top: -1px;
@@ -257,29 +256,69 @@ body[dir=ltr] div[ltype=action] .sender:before {
   font-weight: bold;
   font-size: 80% !important;
   content: "●";
-
 }
 
-/* Historic / Log readback */
-
-#historic_messages {
-	transition: opacity 0.8s ease-in;
-	opacity: 0;
-	height: 0;
-	margin: 0;
-	padding: 0;
+/* Message buffer loading animation */
+.message_buffer_loading_indicator {
+	text-align: center;
+	height: 42px;
 }
 
-#historic_messages.loaded {
-	height: auto;
+.message_buffer_loading_indicator span {
+	font-family: Optima !important;
+	font-size: 35px;
+	font-weight: 600;
+	letter-spacing: 5px;
+	line-height: 43px;
+	color: #5a5a5a;
+	-webkit-animation: ellipsis-period 1.5s infinite;
+	animation: ellipsis-period 1.5s infinite;
 }
 
-#historic_messages[isreload="false"].loaded {
-	opacity: 0.6;
+.message_buffer_loading_indicator span:nth-child(1) {
+	-webkit-animation-delay: 0.0s;
+	animation-delay: 0.0s;
 }
 
-#historic_messages[isreload="true"].loaded {
-	opacity: 1.0;
+.message_buffer_loading_indicator span:nth-child(2) {
+	-webkit-animation-delay: 0.1s;
+	animation-delay: 0.1s;
+}
+
+.message_buffer_loading_indicator span:nth-child(3) {
+	-webkit-animation-delay: 0.2s;
+	animation-delay: 0.2s;
+}
+
+@keyframes ellipsis-period {
+	0% { opacity: 0.2; }
+	20% { opacity: 1.0; }
+	100% { opacity: 0.2; }
+}
+
+/* Message buffer session indicator */
+.message_buffer_session_indicator {
+	display: flex;
+	display: -webkit-flex;
+	padding: .5em 0;
+}
+
+.message_buffer_session_indicator > hr {
+	background: #444;
+	border: 0;
+	height: 1px;
+	margin-top: 0.6em;
+	flex: 1;
+	-webkit-flex: 1;
+}
+
+.message_buffer_session_indicator > span {
+	font-style: oblique;
+	margin: 0 1em;
+}
+
+.message_buffer_session_indicator + #mark {
+	display: none;
 }
 
 /* NOTICE/CTCP/WALLOPS */
@@ -635,7 +674,7 @@ body div.date > span {
   margin: 0 1em;
 }
 
-body div.date + div#mark, body div.date + div#historic_messages + div#mark {
+body div.date + div#mark {
   display: none;
 }
 
