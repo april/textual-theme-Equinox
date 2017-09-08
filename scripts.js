@@ -322,7 +322,7 @@ Textual.newMessagePostedToView = function (line) {
   /* Let's kill topics that appear where they had already been set before
      This happens when you join a room (like a reconnect) that you had been in and seen the topic before */
   if (Equinox.squashTopics === true && message.getAttribute('ltype') === 'topic') {
-    topic = message.getElementsByClassName('message')[0].textContent.replace('Topic is ', '').replace(/\s+/, '');
+    topic = message.getElementsByClassName('message')[0].textContent.replace('Topic is ', '').replace(/\s+/g, '');
 
     if (message.getAttribute('command') === '332') { // an actual topic change
       // hide the topic if it's the same topic again
@@ -342,7 +342,7 @@ Textual.newMessagePostedToView = function (line) {
 
   // much like we suppress duplicate topics, we want to suppress duplicate modes
   if (Equinox.squashModes === true && message.getAttribute('ltype') === 'mode') {
-    mode = message.getElementsByClassName('message')[0].textContent.replace(/\s+/, '');
+    mode = message.getElementsByClassName('message')[0].textContent.replace(/\s+/g, '');
 
     if (mode === rs.mode.mode) {
       message.parentNode.removeChild(message);
