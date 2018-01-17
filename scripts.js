@@ -397,16 +397,6 @@ Textual.nicknameSingleClicked = function (e) {
 Textual.viewBodyDidLoad = function () {
   'use strict';
   Textual.fadeOutLoadingScreen(1.00, 0.95);
-
-  // setTimeout(function () {
-  //   Textual.scrollToBottomOfView();
-  // }, 500);
-
-  /* Disable date changes on OS X Mountain Lion because WebKit does not have some of
-     the features that this feature depends on (e.g. -webkit-flex) */
-  if (document.documentElement.getAttribute("systemversion").indexOf("10.8.") === 0) {
-    Equinox.showDateChanges = false;
-  }
 };
 
 Textual.viewFinishedLoadingHistory = function () {
